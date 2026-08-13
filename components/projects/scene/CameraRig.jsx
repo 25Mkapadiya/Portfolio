@@ -15,10 +15,10 @@ export default function CameraRig({ activeProject, reducedMotion, scrollState })
     const alpha = 1 - Math.exp(-5.2 * delta)
 
     if (activeProject) {
-      // Pull back slightly in reading mode so both covers and both page edges
-      // have intentional breathing room around them.
-      targetPosition.set(0, 0.16, 8.78)
-      lookTarget.set(0, 0.0, 3.3)
+      // Reading mode should feel intimate: close enough that the spread fills
+      // most of the viewport, but with enough vertical room for the tallest book.
+      targetPosition.set(0, 0.11, 7.82)
+      lookTarget.set(0, -0.03, 3.34)
     } else {
       const progress = scrollState.current.current
       const pointerX = reducedMotion ? 0 : state.pointer.x * 0.16
