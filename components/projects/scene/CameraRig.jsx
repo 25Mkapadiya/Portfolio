@@ -1,54 +1,41 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
 const targetPosition = new THREE.Vector3()
 const lookTarget = new THREE.Vector3()
+const currentDirection = new THREE.Vector3()
+const currentLook = new THREE.Vector3()
 
-export default function CameraRig({ activeProject, reducedMotion }) {
+export default function CameraRig({ activeProject, reducedMotion, scrollState }) {
   const { camera } = useThree()
-  const scroll = useRef(0)
-  const scrollTarget = useRef(0)
-
-  useEffect(() => {
-    const onWheel = (event) => {
-      if (activeProject || reducedMotion) return
-      scrollTarget.current = THREE.MathUtils.clamp(
-        scrollTarget.current + event.deltaY * 0.0016,
-        -1.35,
-        1.55,
-      )
-    }
-
-    window.addEventListener('wheel', onWheel, { passive: true })
-    return () => window.removeEventListener('wheel', onWheel)
-  }, [activeProject, reducedMotion])
 
   useFrame((state, delta) => {
-    const alpha = 1 - Math.exp(-5 * delta)
-    scroll.current = THREE.MathUtils.lerp(scroll.current, scrollTarget.current, alpha)
+    const alpha = 1 - Math.exp(-5.2 * delta)
 
     if (activeProject) {
       targetPosition.set(0, 0.18, 8.25)
       lookTarget.set(0, 0.08, 3.5)
     } else {
-      const orbit = scroll.current * 0.22
-      const pointerX = reducedMotion ? 0 : state.pointer.x * 0.18
-      const pointerY = reducedMotion ? 0 : state.pointer.y * 0.08
+      const progress = scrollState.current.current
+      const pointerX = reducedMotion ? 0 : state.pointer.x * 0.16
+      const pointerY = reducedMotion ? 0 : state.pointer.y * 0.075
+
+      // The shelf does the large movement. The camera only drifts a little in the
+      // opposite direction so the experience has depth without feeling dizzy.
+      const counterArc = (progress - 0.5) * 0.34
       targetPosition.set(
-        Math.sin(orbit) * 1.25 + pointerX,
-        0.45 + scroll.current * 0.8 + pointerY,
-        8.45 - Math.abs(scroll.current) * 0.15,
+        Math.sin(counterArc) * 0.48 + pointerX,
+        0.31 + Math.sin(progress * Math.PI) * 0.11 + pointerY,
+        8.62 + Math.cos(counterArc) * 0.06,
       )
-      lookTarget.set(0, scroll.current * 0.48, 0)
+      lookTarget.set(0, -0.08, 0.65)
     }
 
     camera.position.lerp(targetPosition, alpha)
-    const currentDirection = new THREE.Vector3()
     camera.getWorldDirection(currentDirection)
-    const currentLook = camera.position.clone().add(currentDirection)
+    currentLook.copy(camera.position).add(currentDirection)
     currentLook.lerp(lookTarget, alpha)
     camera.lookAt(currentLook)
   })
