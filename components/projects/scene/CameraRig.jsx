@@ -15,10 +15,10 @@ export default function CameraRig({ activeProject, reducedMotion, scrollState })
     const alpha = 1 - Math.exp(-5.2 * delta)
 
     if (activeProject) {
-      // Reading mode should feel intimate: close enough that the spread fills
-      // most of the viewport, but with enough vertical room for the tallest book.
-      targetPosition.set(0, 0.11, 7.82)
-      lookTarget.set(0, -0.03, 3.34)
+      // Closer reading position: the open spread occupies most of the viewport
+      // so the pages can eventually carry real screenshots, diagrams and copy.
+      targetPosition.set(0, 0.09, 7.62)
+      lookTarget.set(0, -0.02, 3.5)
     } else {
       const progress = scrollState.current.current
       const pointerX = reducedMotion ? 0 : state.pointer.x * 0.16
