@@ -31,7 +31,7 @@ export default function ProjectBook({
   const previousPage = useRef(pageIndex)
 
   const { height, width, thickness, color, accent } = project.book
-  const transform = useMemo(() => getBookTransform(index, height), [index, height])
+  const transform = useMemo(() => getBookTransform(index, project.book), [index, project.book])
   const pageTone = project.pages?.[pageIndex]?.tone ?? '#eee7dc'
 
   useEffect(() => {
@@ -99,7 +99,7 @@ export default function ProjectBook({
     root.current.quaternion.slerp(tempQuaternion, alpha)
 
     if (!active && !reducedMotion) {
-      root.current.position.y += Math.sin(state.clock.elapsedTime * 0.7 + index * 0.8) * 0.0012
+      root.current.position.y += Math.sin(state.clock.elapsedTime * 0.7 + index * 0.8) * 0.0008
     }
   })
 
