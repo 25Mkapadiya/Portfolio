@@ -4,9 +4,9 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
 const browsePosition = new THREE.Vector3()
-const readingPosition = new THREE.Vector3(0, 0.08, 7.18)
+const readingPosition = new THREE.Vector3(0, 0.06, 6.82)
 const browseLook = new THREE.Vector3()
-const readingLook = new THREE.Vector3(0, -0.03, 3.58)
+const readingLook = new THREE.Vector3(0, -0.02, 3.52)
 const targetPosition = new THREE.Vector3()
 const lookTarget = new THREE.Vector3()
 const currentDirection = new THREE.Vector3()
@@ -40,9 +40,7 @@ export default function CameraRig({ activeProject, reducedMotion, scrollState })
     targetPosition.lerpVectors(browsePosition, readingPosition, progress)
     lookTarget.lerpVectors(browseLook, readingLook, progress)
 
-    // A small final damp absorbs frame-rate variation without introducing a
-    // second animation timeline; the target itself is driven by readerProgress.
-    const alpha = reducedMotion ? 1 : 1 - Math.exp(-11 * delta)
+    const alpha = reducedMotion ? 1 : 1 - Math.exp(-12 * delta)
     camera.position.lerp(targetPosition, alpha)
     camera.getWorldDirection(currentDirection)
     currentLook.copy(camera.position).add(currentDirection)
