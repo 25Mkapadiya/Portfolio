@@ -36,11 +36,14 @@ export default function ProjectOverlay({
     <section className="project-reader" aria-label={`${activeProject.title} project viewer`}>
       <button className="reader-close" onClick={onClose} aria-label="Close project">× CLOSE</button>
 
-      <div className="reader-meta">
+      <aside className="reader-left-page" aria-hidden="true">
+        <span className="reader-project-number">PROJECT {String(pageIndex + 1).padStart(2, '0')}</span>
+        <strong>{activeProject.title}</strong>
+        <div className="reader-left-rule" />
         <span>{activeProject.category}</span>
         <span>{activeProject.year}</span>
         <span>{activeProject.role}</span>
-      </div>
+      </aside>
 
       <article className="reader-copy" key={`${activeProject.id}-${pageIndex}`}>
         <p>{page?.kicker}</p>
