@@ -31,17 +31,17 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
   const previousPage = useRef(pageIndex)
   const captured = useRef(null)
 
-  const { height, width, thickness, color } = project.book
+  const { height, width, thickness, color, accent, paper, theme } = project.book
   const transform = useMemo(() => getBookTransform(index, project.book), [index, project.book])
   const coverDepth = 0.038
   const coverOverhang = 0.032
   const pageBlockDepth = Math.max(0.07, thickness - coverDepth * 2 - 0.025)
-  const rightStackDepth = pageBlockDepth * 0.62
-  const leftStackDepth = pageBlockDepth * 0.34
+  const rightStackDepth = pageBlockDepth * 0.56
+  const leftStackDepth = pageBlockDepth * 0.28
   const pageWidth = width * 0.955
   const pageHeight = height * 0.955
   const hingeX = -width / 2
-  const readingScale = THREE.MathUtils.clamp(2.72 / height, 1.42, 1.6)
+  const readingScale = theme === 'chess' ? 1.62 : THREE.MathUtils.clamp(2.72 / height, 1.42, 1.6)
 
   useEffect(() => {
     const libraryRotation = scrollState.current.libraryRotation ?? 0
@@ -118,10 +118,12 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
     root.current.quaternion.copy(currentQuaternion)
     root.current.scale.setScalar(THREE.MathUtils.lerp(1, readingScale, travel))
 
-    leftLeaf.current.rotation.y = THREE.MathUtils.lerp(0, -Math.PI + 0.06, open)
+    leftLeaf.current.rotation.y = THREE.MathUtils.lerp(0, -Math.PI + 0.08, open)
   })
 
-  const pageTone = project.pages?.[pageIndex]?.tone ?? '#eee7dc'
+  const pageTone = project.pages?.[pageIndex]?.tone ?? paper ?? '#eee7dc'
+  const pagePaper = paper ?? '#eee7dc'
+  const gutterColor = theme === 'chess' ? accent : color
 
   return (
     <group ref={root}>
@@ -130,7 +132,7 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
       </RoundedBox>
 
       <RoundedBox args={[width, height, rightStackDepth]} radius={0.011} smoothness={2} position={[0, 0, -pageBlockDepth * 0.12]} castShadow receiveShadow>
-        <meshStandardMaterial color="#eee7dc" roughness={0.96} />
+        <meshStandardMaterial color={pagePaper} roughness={0.96} />
       </RoundedBox>
       <mesh position={[0, 0, rightStackDepth / 2 - pageBlockDepth * 0.12 + 0.006]} receiveShadow>
         <planeGeometry args={[pageWidth, pageHeight]} />
@@ -138,10 +140,10 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
       </mesh>
 
       <group ref={leftLeaf} position={[hingeX, 0, 0]}>
-        <RoundedBox args={[width, height, leftStackDepth]} radius={0.011} smoothness={2} position={[width / 2, 0, pageBlockDepth * 0.19]} castShadow receiveShadow>
-          <meshStandardMaterial color="#eee7dc" roughness={0.96} />
+        <RoundedBox args={[width, height, leftStackDepth]} radius={0.011} smoothness={2} position={[width / 2, 0, pageBlockDepth * 0.16]} castShadow receiveShadow>
+          <meshStandardMaterial color={pagePaper} roughness={0.96} />
         </RoundedBox>
-        <mesh position={[width / 2, 0, pageBlockDepth * 0.19 - leftStackDepth / 2 - 0.006]} receiveShadow>
+        <mesh position={[width / 2, 0, pageBlockDepth * 0.16 - leftStackDepth / 2 - 0.006]} receiveShadow>
           <planeGeometry args={[pageWidth, pageHeight]} />
           <meshStandardMaterial color={pageTone} roughness={0.99} side={THREE.DoubleSide} />
         </mesh>
@@ -151,18 +153,18 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
       </group>
 
       <RoundedBox args={[0.038, height + 0.015, pageBlockDepth + coverDepth]} radius={0.004} smoothness={2} position={[hingeX - 0.01, 0, 0]} castShadow>
-        <meshStandardMaterial color={color} roughness={0.72} />
+        <meshStandardMaterial color={gutterColor} roughness={0.72} />
       </RoundedBox>
 
       <mesh position={[hingeX, 0, rightStackDepth / 2 + 0.012]}>
         <planeGeometry args={[0.022, pageHeight * 0.92]} />
-        <meshStandardMaterial color="#4a433d" transparent opacity={0.12} />
+        <meshStandardMaterial color={theme === 'chess' ? '#990000' : '#4a433d'} transparent opacity={0.12} />
       </mesh>
 
       <group ref={turningPage} position={[hingeX, 0, rightStackDepth / 2 + 0.02]}>
         <mesh position={[pageWidth / 2, 0, 0]} castShadow>
           <planeGeometry args={[pageWidth, pageHeight, 24, 1]} />
-          <meshStandardMaterial color="#f8f2e9" roughness={0.99} side={THREE.DoubleSide} />
+          <meshStandardMaterial color={pagePaper} roughness={0.99} side={THREE.DoubleSide} />
         </mesh>
       </group>
     </group>
