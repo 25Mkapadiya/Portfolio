@@ -1,7 +1,5 @@
 'use client'
 
-const projectPageUrl = 'https://25mkapadiya.github.io/Chess-3-Different-Versions-Lux-et-Mat-/'
-
 const linkStyle = {
   display: 'inline-flex',
   alignItems: 'center',
@@ -39,7 +37,7 @@ export default function ProjectOverlay({
             </>
           )}
         </div>
-        <div className="projects-instruction">Scroll to wind through the library · Hover to inspect · Click to open</div>
+        <div className="projects-instruction">Scroll one step at a time · Each stop focuses one book · Click to open</div>
       </>
     )
   }
@@ -80,7 +78,11 @@ export default function ProjectOverlay({
         )}
       </aside>
 
-      <article className={`reader-copy ${isChess ? 'reader-copy-chess' : ''}`} key={`${activeProject.id}-${pageIndex}`}>
+      <article
+        className={`reader-copy ${isChess ? 'reader-copy-chess' : ''}`}
+        key={`${activeProject.id}-${pageIndex}`}
+        style={isChess ? { width: 'min(27vw, 430px)' } : undefined}
+      >
         <p>{page?.kicker}</p>
         <h2>{page?.title}</h2>
         <div className="reader-rule" />
@@ -99,7 +101,6 @@ export default function ProjectOverlay({
         {isRunSpread && (
           <div style={{ marginTop: 12, pointerEvents: 'auto' }}>
             <div aria-label="Lux et Mat project links" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              <a href={projectPageUrl} target="_blank" rel="noreferrer" style={linkStyle}>Project page ↗</a>
               {activeProject.links?.map((link) => (
                 <a key={link.href} href={link.href} target="_blank" rel="noreferrer" style={linkStyle}>
                   {link.label} ↗
