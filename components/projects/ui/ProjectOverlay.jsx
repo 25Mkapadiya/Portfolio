@@ -37,7 +37,7 @@ export default function ProjectOverlay({
       <button className="reader-close" onClick={onClose} aria-label="Close project">× CLOSE</button>
 
       <aside className="reader-left-page" aria-hidden="true">
-        <span className="reader-project-number">PROJECT {String(pageIndex + 1).padStart(2, '0')}</span>
+        <span className="reader-project-number">SPREAD {String(pageIndex + 1).padStart(2, '0')}</span>
         <strong>{activeProject.title}</strong>
         <div className="reader-left-rule" />
         <span>{activeProject.category}</span>
