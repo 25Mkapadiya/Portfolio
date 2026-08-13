@@ -11,7 +11,7 @@ const targetScale = new THREE.Vector3()
 const targetQuaternion = new THREE.Quaternion()
 const targetEuler = new THREE.Euler()
 
-export default function ProjectBook({ project, index, hidden, interactionLocked, onOpen, onHover, reducedMotion }) {
+export default function ProjectBook({ project, index, active, hidden, interactionLocked, onOpen, onHover, reducedMotion }) {
   const root = useRef()
   const [hovered, setHovered] = useState(false)
   const { height, width, thickness, color, accent } = project.book
@@ -21,6 +21,7 @@ export default function ProjectBook({ project, index, hidden, interactionLocked,
   const pageBlockDepth = Math.max(0.07, thickness - coverDepth * 2 - 0.025)
   const coverZ = pageBlockDepth / 2 + coverDepth / 2 + 0.008
   const hingeX = -width / 2
+  const unavailable = Boolean(hidden || active)
 
   useFrame((_, delta) => {
     if (!root.current) return
@@ -41,7 +42,7 @@ export default function ProjectBook({ project, index, hidden, interactionLocked,
 
   const handleOver = (event) => {
     event.stopPropagation()
-    if (!project.interactive || interactionLocked || hidden) return
+    if (!project.interactive || interactionLocked || unavailable) return
     setHovered(true)
     onHover?.(project)
     document.body.dataset.cursor = 'open'
@@ -56,7 +57,7 @@ export default function ProjectBook({ project, index, hidden, interactionLocked,
 
   const handleClick = (event) => {
     event.stopPropagation()
-    if (!project.interactive || interactionLocked || hidden) return
+    if (!project.interactive || interactionLocked || unavailable) return
     setHovered(false)
     onHover?.(null)
     document.body.dataset.cursor = ''
@@ -64,7 +65,7 @@ export default function ProjectBook({ project, index, hidden, interactionLocked,
   }
 
   return (
-    <group ref={root} visible={!hidden} position={transform.position} rotation={transform.rotation} onPointerOver={handleOver} onPointerOut={handleOut} onClick={handleClick}>
+    <group ref={root} visible={!unavailable} position={transform.position} rotation={transform.rotation} onPointerOver={handleOver} onPointerOut={handleOut} onClick={handleClick}>
       <RoundedBox args={[width, height, pageBlockDepth]} radius={0.012} smoothness={2} castShadow receiveShadow>
         <meshStandardMaterial color="#eee7dc" roughness={0.95} />
       </RoundedBox>
