@@ -24,7 +24,7 @@ export default function ProjectOverlay({
             </>
           )}
         </div>
-        <div className="projects-instruction">Scroll to travel the spiral · Hover to inspect · Click to open</div>
+        <div className="projects-instruction">Scroll to wind through the library · Hover to inspect · Click to open</div>
       </>
     )
   }
