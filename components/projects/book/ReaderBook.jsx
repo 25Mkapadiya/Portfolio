@@ -6,8 +6,10 @@ import { RoundedBox } from '@react-three/drei'
 import gsap from 'gsap'
 import * as THREE from 'three'
 import { getBookTransform } from '../../../lib/spiral'
+import { ChessCoverArtwork, ChessSpineArtwork } from './ProjectBook'
 
 const yAxis = new THREE.Vector3(0, 1, 0)
+const extractPosition = new THREE.Vector3()
 const endPosition = new THREE.Vector3()
 const currentPosition = new THREE.Vector3()
 const endQuaternion = new THREE.Quaternion()
@@ -32,8 +34,11 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
   const coverDepth = 0.038
   const coverOverhang = 0.032
   const pageBlockDepth = Math.max(0.07, thickness - coverDepth * 2 - 0.025)
-  const rightStackDepth = pageBlockDepth * 0.54
-  const leftStackDepth = pageBlockDepth * 0.26
+  const rightStackDepth = pageBlockDepth * 0.52
+  const leftStackDepth = pageBlockDepth - rightStackDepth
+  const rightStackCenterZ = -pageBlockDepth / 2 + rightStackDepth / 2
+  const leftStackCenterZ = pageBlockDepth / 2 - leftStackDepth / 2
+  const coverZ = pageBlockDepth / 2 + coverDepth / 2 + 0.008
   const pageWidth = width * 0.955
   const pageHeight = height * 0.955
   const hingeX = -width / 2
@@ -50,7 +55,12 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
     const quaternion = new THREE.Quaternion().setFromEuler(
       new THREE.Euler(transform.rotation[0], transform.rotation[1] + libraryRotation, transform.rotation[2]),
     )
-    captured.current = { position, quaternion }
+
+    const radial = new THREE.Vector3(transform.radial[0], 0, transform.radial[2])
+      .applyAxisAngle(yAxis, libraryRotation)
+      .normalize()
+
+    captured.current = { position, quaternion, radial }
   }
 
   useLayoutEffect(() => {
@@ -65,6 +75,7 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
       root.current.scale.setScalar(1)
     }
     if (leftLeaf.current) leftLeaf.current.rotation.y = 0
+    if (turningPage.current) turningPage.current.visible = false
   }, [project.id, scrollState])
 
   useEffect(() => {
@@ -95,29 +106,37 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
   useFrame((_, delta) => {
     if (!root.current || !leftLeaf.current || !captured.current) return
 
-    const duration = active ? 1.08 : 0.82
+    const duration = active ? 1.18 : 0.94
     const direction = active ? 1 : -1
     progressRef.current = reducedMotion
       ? (active ? 1 : 0)
       : THREE.MathUtils.clamp(progressRef.current + direction * (delta / duration), 0, 1)
 
     const p = progressRef.current
-    const travel = smoothUnit(p / 0.64)
-    const open = smoothUnit((p - 0.66) / 0.34)
+    const extract = smoothUnit(p / 0.28)
+    const focus = smoothUnit((p - 0.2) / 0.5)
+    const open = smoothUnit((p - 0.72) / 0.28)
     scrollState.current.readerProgress = p
 
+    extractPosition
+      .copy(captured.current.position)
+      .addScaledVector(captured.current.radial, 0.72)
+
+    currentPosition.lerpVectors(captured.current.position, extractPosition, extract)
     endPosition.set(width * 0.5 * readingScale, -0.015, 3.46)
-    currentPosition.lerpVectors(captured.current.position, endPosition, travel)
+    currentPosition.lerp(endPosition, focus)
     root.current.position.copy(currentPosition)
 
     endEuler.set(-0.025, 0, 0)
     endQuaternion.setFromEuler(endEuler)
-    currentQuaternion.slerpQuaternions(captured.current.quaternion, endQuaternion, travel)
+    currentQuaternion.slerpQuaternions(captured.current.quaternion, endQuaternion, focus)
     root.current.quaternion.copy(currentQuaternion)
-    root.current.scale.setScalar(THREE.MathUtils.lerp(1, readingScale, travel))
+    root.current.scale.setScalar(THREE.MathUtils.lerp(1, readingScale, focus))
 
     const openAngle = theme === 'chess' ? -Math.PI + 0.18 : -Math.PI + 0.2
     leftLeaf.current.rotation.y = THREE.MathUtils.lerp(0, openAngle, open)
+
+    if (turningPage.current) turningPage.current.visible = open > 0.985
 
     if (!active && p === 0 && !returnedNotified.current) {
       returnedNotified.current = true
@@ -127,45 +146,90 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
 
   const pageTone = project.pages?.[pageIndex]?.tone ?? paper ?? '#eee7dc'
   const pagePaper = paper ?? '#eee7dc'
-  const gutterColor = theme === 'chess' ? accent : color
 
   return (
     <group ref={root} position={captured.current.position} quaternion={captured.current.quaternion}>
-      <RoundedBox args={[width + coverOverhang, height + coverOverhang, coverDepth]} radius={0.006} smoothness={2} position={[0, 0, -pageBlockDepth / 2 - coverDepth * 0.55]} castShadow>
+      <RoundedBox
+        args={[width + coverOverhang, height + coverOverhang, coverDepth]}
+        radius={0.006}
+        smoothness={2}
+        position={[0, 0, -coverZ]}
+        castShadow
+      >
         <meshStandardMaterial color={color} roughness={0.64} />
       </RoundedBox>
 
-      <RoundedBox args={[width, height, rightStackDepth]} radius={0.009} smoothness={2} position={[0, 0, -pageBlockDepth * 0.12]} castShadow receiveShadow>
+      <RoundedBox
+        args={[width, height, rightStackDepth]}
+        radius={0.009}
+        smoothness={2}
+        position={[0, 0, rightStackCenterZ]}
+        castShadow
+        receiveShadow
+      >
         <meshStandardMaterial color={pagePaper} roughness={0.96} />
       </RoundedBox>
-      <mesh position={[0, 0, rightStackDepth / 2 - pageBlockDepth * 0.12 + 0.006]} receiveShadow>
+      <mesh position={[0, 0, rightStackCenterZ + rightStackDepth / 2 + 0.006]} receiveShadow>
         <planeGeometry args={[pageWidth, pageHeight]} />
         <meshStandardMaterial color={pageTone} roughness={0.99} side={THREE.DoubleSide} />
       </mesh>
 
       <group ref={leftLeaf} position={[hingeX, 0, 0]}>
-        <RoundedBox args={[width, height, leftStackDepth]} radius={0.009} smoothness={2} position={[width / 2, 0, pageBlockDepth * 0.15]} castShadow receiveShadow>
+        <RoundedBox
+          args={[width, height, leftStackDepth]}
+          radius={0.009}
+          smoothness={2}
+          position={[width / 2, 0, leftStackCenterZ]}
+          castShadow
+          receiveShadow
+        >
           <meshStandardMaterial color={pagePaper} roughness={0.96} />
         </RoundedBox>
-        <mesh position={[width / 2, 0, pageBlockDepth * 0.15 - leftStackDepth / 2 - 0.006]} receiveShadow>
+        <mesh position={[width / 2, 0, leftStackCenterZ - leftStackDepth / 2 - 0.006]} receiveShadow>
           <planeGeometry args={[pageWidth, pageHeight]} />
           <meshStandardMaterial color={pageTone} roughness={0.99} side={THREE.DoubleSide} />
         </mesh>
-        <RoundedBox args={[width + coverOverhang, height + coverOverhang, coverDepth]} radius={0.006} smoothness={2} position={[width / 2, 0, pageBlockDepth / 2 + coverDepth * 0.55]} castShadow>
+        <RoundedBox
+          args={[width + coverOverhang, height + coverOverhang, coverDepth]}
+          radius={0.006}
+          smoothness={2}
+          position={[width / 2, 0, coverZ]}
+          castShadow
+        >
           <meshStandardMaterial color={color} roughness={0.62} />
         </RoundedBox>
+
+        {theme === 'chess' && (
+          <group position={[width / 2, 0, 0]}>
+            <ChessCoverArtwork
+              width={width}
+              height={height}
+              z={coverZ + coverDepth / 2 + 0.008}
+            />
+          </group>
+        )}
       </group>
 
-      <RoundedBox args={[0.032, height + 0.012, pageBlockDepth + coverDepth]} radius={0.003} smoothness={2} position={[hingeX - 0.008, 0, 0]} castShadow>
-        <meshStandardMaterial color={gutterColor} roughness={0.72} />
+      <RoundedBox
+        args={[0.05, height + 0.025, pageBlockDepth + coverDepth * 1.7]}
+        radius={0.005}
+        smoothness={2}
+        position={[hingeX - 0.017, 0, 0]}
+        castShadow
+      >
+        <meshStandardMaterial color={color} roughness={0.7} />
       </RoundedBox>
 
-      <mesh position={[hingeX, 0, rightStackDepth / 2 + 0.012]}>
-        <planeGeometry args={[0.018, pageHeight * 0.92]} />
-        <meshStandardMaterial color={theme === 'chess' ? '#990000' : '#4a433d'} transparent opacity={0.11} />
-      </mesh>
+      {theme === 'chess' ? (
+        <ChessSpineArtwork x={hingeX - 0.045} height={height} thickness={thickness} />
+      ) : (
+        <mesh position={[hingeX - 0.042, height * 0.2, 0]} rotation={[0, -Math.PI / 2, 0]}>
+          <planeGeometry args={[Math.max(0.08, thickness * 0.58), Math.max(0.16, height * 0.19)]} />
+          <meshStandardMaterial color={accent} roughness={0.8} />
+        </mesh>
+      )}
 
-      <group ref={turningPage} position={[hingeX, 0, rightStackDepth / 2 + 0.02]}>
+      <group ref={turningPage} position={[hingeX, 0, rightStackCenterZ + rightStackDepth / 2 + 0.02]}>
         <mesh position={[pageWidth / 2, 0, 0]} castShadow>
           <planeGeometry args={[pageWidth, pageHeight, 24, 1]} />
           <meshStandardMaterial color={pagePaper} roughness={0.99} side={THREE.DoubleSide} />
