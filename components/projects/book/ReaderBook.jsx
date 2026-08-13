@@ -14,7 +14,6 @@ const currentPosition = new THREE.Vector3()
 const startQuaternion = new THREE.Quaternion()
 const endQuaternion = new THREE.Quaternion()
 const currentQuaternion = new THREE.Quaternion()
-const startEuler = new THREE.Euler()
 const endEuler = new THREE.Euler()
 const libraryQuaternion = new THREE.Quaternion()
 
@@ -27,21 +26,22 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
   const root = useRef()
   const leftLeaf = useRef()
   const turningPage = useRef()
-  const timeline = useRef({ value: active ? 1 : 0 })
+  const progressRef = useRef(0)
   const previousPage = useRef(pageIndex)
   const captured = useRef(null)
+  const returnedNotified = useRef(false)
 
   const { height, width, thickness, color, accent, paper, theme } = project.book
   const transform = useMemo(() => getBookTransform(index, project.book), [index, project.book])
   const coverDepth = 0.038
   const coverOverhang = 0.032
   const pageBlockDepth = Math.max(0.07, thickness - coverDepth * 2 - 0.025)
-  const rightStackDepth = pageBlockDepth * 0.56
-  const leftStackDepth = pageBlockDepth * 0.28
+  const rightStackDepth = pageBlockDepth * 0.54
+  const leftStackDepth = pageBlockDepth * 0.26
   const pageWidth = width * 0.955
   const pageHeight = height * 0.955
   const hingeX = -width / 2
-  const readingScale = theme === 'chess' ? 1.62 : THREE.MathUtils.clamp(2.72 / height, 1.42, 1.6)
+  const readingScale = theme === 'chess' ? 1.68 : THREE.MathUtils.clamp(2.8 / height, 1.48, 1.64)
 
   useEffect(() => {
     const libraryRotation = scrollState.current.libraryRotation ?? 0
@@ -59,24 +59,21 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
       quaternion: libraryQuaternion.clone().multiply(localQuaternion),
     }
 
+    progressRef.current = 0
+    returnedNotified.current = false
+
     if (root.current) {
       root.current.position.copy(captured.current.position)
       root.current.quaternion.copy(captured.current.quaternion)
       root.current.scale.setScalar(1)
     }
+    if (leftLeaf.current) leftLeaf.current.rotation.y = 0
+    scrollState.current.readerProgress = 0
   }, [project.id, scrollState, transform.position, transform.rotation])
 
   useEffect(() => {
-    gsap.killTweensOf(timeline.current)
-    gsap.to(timeline.current, {
-      value: active ? 1 : 0,
-      duration: reducedMotion ? 0.2 : active ? 1.35 : 1.0,
-      ease: active ? 'power3.inOut' : 'power2.inOut',
-      onComplete: () => {
-        if (!active) onReturned?.()
-      },
-    })
-  }, [active, reducedMotion, onReturned])
+    if (active) returnedNotified.current = false
+  }, [active])
 
   useEffect(() => {
     if (!active || !turningPage.current || previousPage.current === pageIndex) {
@@ -89,7 +86,7 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
     page.y = direction > 0 ? 0 : -Math.PI
     gsap.to(page, {
       y: direction > 0 ? -Math.PI : 0,
-      duration: reducedMotion ? 0.16 : 0.66,
+      duration: reducedMotion ? 0.14 : 0.58,
       ease: 'power2.inOut',
       onComplete: () => {
         if (turningPage.current) turningPage.current.rotation.y = 0
@@ -98,27 +95,40 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
     previousPage.current = pageIndex
   }, [active, pageIndex, pageDirection, reducedMotion])
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (!root.current || !leftLeaf.current || !captured.current) return
 
-    const progress = reducedMotion ? (active ? 1 : 0) : timeline.current.value
-    const travel = smoothUnit(progress / 0.58)
-    const open = smoothUnit((progress - 0.56) / 0.44)
-    scrollState.current.readerProgress = progress
+    const target = active ? 1 : 0
+    const progress = reducedMotion
+      ? target
+      : THREE.MathUtils.damp(progressRef.current, target, active ? 4.2 : 5.2, delta)
+
+    progressRef.current = Math.abs(progress - target) < 0.0006 ? target : progress
+    const p = progressRef.current
+
+    // First settle the selected book into the reading position. Only then open it.
+    const travel = smoothUnit(p / 0.76)
+    const open = smoothUnit((p - 0.7) / 0.3)
+    scrollState.current.readerProgress = p
 
     startPosition.copy(captured.current.position)
-    endPosition.set(width * 0.5 * readingScale, -0.02, 3.42)
+    endPosition.set(width * 0.5 * readingScale, -0.015, 3.48)
     currentPosition.lerpVectors(startPosition, endPosition, travel)
     root.current.position.copy(currentPosition)
 
-    startQuaternion.copy(captured.current.quaternion)
-    endEuler.set(-0.025, 0, 0)
+    endEuler.set(-0.018, 0, 0)
     endQuaternion.setFromEuler(endEuler)
-    currentQuaternion.slerpQuaternions(startQuaternion, endQuaternion, travel)
+    currentQuaternion.slerpQuaternions(captured.current.quaternion, endQuaternion, travel)
     root.current.quaternion.copy(currentQuaternion)
     root.current.scale.setScalar(THREE.MathUtils.lerp(1, readingScale, travel))
 
-    leftLeaf.current.rotation.y = THREE.MathUtils.lerp(0, -Math.PI + 0.08, open)
+    const openAngle = theme === 'chess' ? -Math.PI + 0.14 : -Math.PI + 0.16
+    leftLeaf.current.rotation.y = THREE.MathUtils.lerp(0, openAngle, open)
+
+    if (!active && p === 0 && !returnedNotified.current) {
+      returnedNotified.current = true
+      onReturned?.()
+    }
   })
 
   const pageTone = project.pages?.[pageIndex]?.tone ?? paper ?? '#eee7dc'
@@ -131,7 +141,7 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
         <meshStandardMaterial color={color} roughness={0.64} />
       </RoundedBox>
 
-      <RoundedBox args={[width, height, rightStackDepth]} radius={0.011} smoothness={2} position={[0, 0, -pageBlockDepth * 0.12]} castShadow receiveShadow>
+      <RoundedBox args={[width, height, rightStackDepth]} radius={0.009} smoothness={2} position={[0, 0, -pageBlockDepth * 0.12]} castShadow receiveShadow>
         <meshStandardMaterial color={pagePaper} roughness={0.96} />
       </RoundedBox>
       <mesh position={[0, 0, rightStackDepth / 2 - pageBlockDepth * 0.12 + 0.006]} receiveShadow>
@@ -140,10 +150,10 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
       </mesh>
 
       <group ref={leftLeaf} position={[hingeX, 0, 0]}>
-        <RoundedBox args={[width, height, leftStackDepth]} radius={0.011} smoothness={2} position={[width / 2, 0, pageBlockDepth * 0.16]} castShadow receiveShadow>
+        <RoundedBox args={[width, height, leftStackDepth]} radius={0.009} smoothness={2} position={[width / 2, 0, pageBlockDepth * 0.15]} castShadow receiveShadow>
           <meshStandardMaterial color={pagePaper} roughness={0.96} />
         </RoundedBox>
-        <mesh position={[width / 2, 0, pageBlockDepth * 0.16 - leftStackDepth / 2 - 0.006]} receiveShadow>
+        <mesh position={[width / 2, 0, pageBlockDepth * 0.15 - leftStackDepth / 2 - 0.006]} receiveShadow>
           <planeGeometry args={[pageWidth, pageHeight]} />
           <meshStandardMaterial color={pageTone} roughness={0.99} side={THREE.DoubleSide} />
         </mesh>
@@ -152,13 +162,13 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
         </RoundedBox>
       </group>
 
-      <RoundedBox args={[0.038, height + 0.015, pageBlockDepth + coverDepth]} radius={0.004} smoothness={2} position={[hingeX - 0.01, 0, 0]} castShadow>
+      <RoundedBox args={[0.032, height + 0.012, pageBlockDepth + coverDepth]} radius={0.003} smoothness={2} position={[hingeX - 0.008, 0, 0]} castShadow>
         <meshStandardMaterial color={gutterColor} roughness={0.72} />
       </RoundedBox>
 
       <mesh position={[hingeX, 0, rightStackDepth / 2 + 0.012]}>
-        <planeGeometry args={[0.022, pageHeight * 0.92]} />
-        <meshStandardMaterial color={theme === 'chess' ? '#990000' : '#4a433d'} transparent opacity={0.12} />
+        <planeGeometry args={[0.018, pageHeight * 0.92]} />
+        <meshStandardMaterial color={theme === 'chess' ? '#990000' : '#4a433d'} transparent opacity={0.11} />
       </mesh>
 
       <group ref={turningPage} position={[hingeX, 0, rightStackDepth / 2 + 0.02]}>
