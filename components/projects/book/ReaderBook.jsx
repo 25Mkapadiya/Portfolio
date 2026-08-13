@@ -39,9 +39,6 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
   const hingeX = -width / 2
   const readingScale = theme === 'chess' ? 1.4 : THREE.MathUtils.clamp(2.55 / height, 1.34, 1.5)
 
-  // Capture the selected shelf book during render, before the foreground copy can
-  // ever paint at the scene origin. ReaderBook is keyed by project in the scene,
-  // so this value is created once for each selection.
   const captured = useRef(null)
   if (!captured.current) {
     const libraryRotation = scrollState.current.libraryRotation ?? 0
@@ -51,20 +48,15 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
     position.y += libraryY
 
     const quaternion = new THREE.Quaternion().setFromEuler(
-      new THREE.Euler(
-        transform.rotation[0],
-        transform.rotation[1] + libraryRotation,
-        transform.rotation[2],
-      ),
+      new THREE.Euler(transform.rotation[0], transform.rotation[1] + libraryRotation, transform.rotation[2]),
     )
-
     captured.current = { position, quaternion }
   }
 
   useLayoutEffect(() => {
     progressRef.current = 0
     returnedNotified.current = false
-    previousPage.current = pageIndex
+    previousPage.current = 0
     scrollState.current.readerProgress = 0
 
     if (root.current) {
@@ -73,7 +65,7 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
       root.current.scale.setScalar(1)
     }
     if (leftLeaf.current) leftLeaf.current.rotation.y = 0
-  }, [pageIndex, project.id, scrollState])
+  }, [project.id, scrollState])
 
   useEffect(() => {
     if (active) returnedNotified.current = false
@@ -105,15 +97,11 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
 
     const duration = active ? 1.08 : 0.82
     const direction = active ? 1 : -1
-    const nextProgress = reducedMotion
+    progressRef.current = reducedMotion
       ? (active ? 1 : 0)
       : THREE.MathUtils.clamp(progressRef.current + direction * (delta / duration), 0, 1)
 
-    progressRef.current = nextProgress
-    const p = nextProgress
-
-    // The selected book fully extracts and settles before the cover begins to
-    // move. On close, this reverses naturally: close first, then return.
+    const p = progressRef.current
     const travel = smoothUnit(p / 0.64)
     const open = smoothUnit((p - 0.66) / 0.34)
     scrollState.current.readerProgress = p
@@ -142,11 +130,7 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
   const gutterColor = theme === 'chess' ? accent : color
 
   return (
-    <group
-      ref={root}
-      position={captured.current.position}
-      quaternion={captured.current.quaternion}
-    >
+    <group ref={root} position={captured.current.position} quaternion={captured.current.quaternion}>
       <RoundedBox args={[width + coverOverhang, height + coverOverhang, coverDepth]} radius={0.006} smoothness={2} position={[0, 0, -pageBlockDepth / 2 - coverDepth * 0.55]} castShadow>
         <meshStandardMaterial color={color} roughness={0.64} />
       </RoundedBox>
