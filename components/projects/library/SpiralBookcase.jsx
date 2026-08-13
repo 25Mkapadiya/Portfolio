@@ -3,8 +3,9 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
+import * as THREE from 'three'
 import { projects } from '../../../data/projects'
-import { getShelfSegments } from '../../../lib/spiral'
+import { getLibraryMotion, getShelfSegments } from '../../../lib/spiral'
 import ProjectBook from '../book/ProjectBook'
 
 export default function SpiralBookcase({
@@ -15,18 +16,47 @@ export default function SpiralBookcase({
   onOpen,
   onHover,
   reducedMotion,
+  scrollState,
 }) {
   const group = useRef()
   const shelves = useMemo(() => getShelfSegments(29), [])
+  const initialMotion = useMemo(() => getLibraryMotion(0, projects.length), [])
 
-  useFrame((state) => {
-    if (!group.current || reducedMotion || activeProject) return
-    group.current.position.y = Math.sin(state.clock.elapsedTime * 0.35) * 0.025
-    group.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.18) * 0.008
+  useFrame((state, delta) => {
+    if (!group.current) return
+
+    const progress = scrollState.current.current
+    const motion = getLibraryMotion(progress, projects.length)
+    const idleRotation = !activeProject && !reducedMotion
+      ? Math.sin(state.clock.elapsedTime * 0.18) * 0.005
+      : 0
+    const idleY = !activeProject && !reducedMotion
+      ? Math.sin(state.clock.elapsedTime * 0.34) * 0.018
+      : 0
+
+    group.current.rotation.y = THREE.MathUtils.damp(
+      group.current.rotation.y,
+      motion.rotationY + idleRotation,
+      activeProject ? 6.5 : 5.4,
+      delta,
+    )
+    group.current.position.y = THREE.MathUtils.damp(
+      group.current.position.y,
+      motion.positionY + idleY,
+      activeProject ? 6.5 : 5.4,
+      delta,
+    )
+
+    scrollState.current.libraryRotation = group.current.rotation.y
+    scrollState.current.libraryY = group.current.position.y
   })
 
   return (
-    <group ref={group}>
+    <group
+      ref={group}
+      position={[0, initialMotion.positionY, 0]}
+      rotation={[0, initialMotion.rotationY, 0]}
+    >
       {shelves.map((shelf, index) => (
         <RoundedBox
           key={shelf.id}
@@ -54,6 +84,7 @@ export default function SpiralBookcase({
           onOpen={onOpen}
           onHover={onHover}
           reducedMotion={reducedMotion}
+          scrollState={scrollState}
         />
       ))}
     </group>
