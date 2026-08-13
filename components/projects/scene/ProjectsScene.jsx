@@ -19,6 +19,7 @@ export default function ProjectsScene(props) {
     bookCount: projects.length,
     libraryRotation: initialMotion.rotationY,
     libraryY: initialMotion.positionY,
+    readerProgress: props.activeProject ? 1 : 0,
   })
 
   return (
