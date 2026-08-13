@@ -103,7 +103,6 @@ export default function ProjectsExperience({ initialSlug }) {
 
   const cursorLabel = useMemo(() => {
     if (hoveredProject?.interactive && !activeProject) return 'OPEN'
-    if (activeProject) return 'TURN'
     return ''
   }, [hoveredProject, activeProject])
 
