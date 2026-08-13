@@ -33,6 +33,8 @@ export default function ProjectBook({
   const { height, width, thickness, color, accent } = project.book
   const transform = useMemo(() => getBookTransform(index, project.book), [index, project.book])
   const pageTone = project.pages?.[pageIndex]?.tone ?? '#eee7dc'
+  const coverDepth = 0.052
+  const coverOverhang = 0.038
 
   useEffect(() => {
     if (!coverPivot.current) return
@@ -82,15 +84,15 @@ export default function ProjectBook({
       tempScale.setScalar(1.48)
       targetEuler.set(0, -parentRotation, 0)
     } else {
-      const hoverOffset = hovered && project.interactive ? 0.22 : 0
+      const hoverOffset = hovered && project.interactive ? 0.3 : 0
       tempPosition.set(
         transform.position[0] + transform.radial[0] * hoverOffset,
         transform.position[1] + (hovered ? 0.025 : 0),
         transform.position[2] + transform.radial[2] * hoverOffset,
       )
-      tempScale.setScalar(hovered && project.interactive ? 1.035 : 1)
+      tempScale.setScalar(hovered && project.interactive ? 1.025 : 1)
       targetEuler.set(...transform.rotation)
-      if (hovered && project.interactive && !reducedMotion) targetEuler.x = -0.035
+      if (hovered && project.interactive && !reducedMotion) targetEuler.z = -0.018
     }
 
     root.current.position.lerp(tempPosition, alpha)
@@ -99,7 +101,7 @@ export default function ProjectBook({
     root.current.quaternion.slerp(tempQuaternion, alpha)
 
     if (!active && !reducedMotion) {
-      root.current.position.y += Math.sin(state.clock.elapsedTime * 0.7 + index * 0.8) * 0.0008
+      root.current.position.y += Math.sin(state.clock.elapsedTime * 0.7 + index * 0.8) * 0.0007
     }
   })
 
@@ -136,23 +138,56 @@ export default function ProjectBook({
       onPointerOut={handleOut}
       onClick={handleClick}
     >
-      <RoundedBox args={[width, height, thickness]} radius={0.045} smoothness={3} position={[0, 0, 0]} castShadow receiveShadow>
-        <meshStandardMaterial color={pageTone} roughness={0.9} />
+      <RoundedBox
+        args={[width, height, Math.max(0.07, thickness - 0.055)]}
+        radius={0.018}
+        smoothness={2}
+        castShadow
+        receiveShadow
+      >
+        <meshStandardMaterial color={pageTone} roughness={0.91} />
       </RoundedBox>
 
-      <RoundedBox args={[width + 0.055, height + 0.055, 0.055]} radius={0.045} smoothness={3} position={[0, 0, -thickness / 2 - 0.03]} castShadow>
+      <RoundedBox
+        args={[width + coverOverhang, height + coverOverhang, coverDepth]}
+        radius={0.009}
+        smoothness={2}
+        position={[0, 0, -thickness / 2 - 0.026]}
+        castShadow
+      >
         <meshStandardMaterial color={color} roughness={0.62} />
       </RoundedBox>
 
-      <RoundedBox args={[0.075, height + 0.04, thickness + 0.08]} radius={0.025} smoothness={3} position={[-width / 2 - 0.025, 0, 0]} castShadow>
+      <RoundedBox
+        args={[0.055, height + 0.03, thickness + 0.055]}
+        radius={0.008}
+        smoothness={2}
+        position={[-width / 2 - 0.018, 0, 0]}
+        castShadow
+      >
         <meshStandardMaterial color={color} roughness={0.68} />
       </RoundedBox>
 
-      <group ref={coverPivot} position={[-width / 2, 0, thickness / 2 + 0.032]}>
-        <RoundedBox args={[width + 0.055, height + 0.055, 0.055]} radius={0.045} smoothness={3} position={[width / 2, 0, 0]} castShadow>
+      {/* Small spine mark: visible while the book is stored in the library. */}
+      <mesh
+        position={[-width / 2 - 0.047, height * 0.2, 0]}
+        rotation={[0, -Math.PI / 2, 0]}
+      >
+        <planeGeometry args={[Math.max(0.08, thickness * 0.58), Math.max(0.16, height * 0.19)]} />
+        <meshStandardMaterial color={accent} roughness={0.78} />
+      </mesh>
+
+      <group ref={coverPivot} position={[-width / 2, 0, thickness / 2 + 0.026]}>
+        <RoundedBox
+          args={[width + coverOverhang, height + coverOverhang, coverDepth]}
+          radius={0.009}
+          smoothness={2}
+          position={[width / 2, 0, 0]}
+          castShadow
+        >
           <meshStandardMaterial color={color} roughness={0.6} />
         </RoundedBox>
-        <mesh position={[width * 0.5, 0, 0.032]}>
+        <mesh position={[width * 0.5, 0, coverDepth * 0.52]}>
           <planeGeometry args={[width * 0.62, height * 0.32]} />
           <meshStandardMaterial color={accent} roughness={0.8} />
         </mesh>
