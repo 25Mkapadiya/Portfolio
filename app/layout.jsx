@@ -1,4 +1,5 @@
 import './globals.css'
+import './projects-scroll.css'
 
 export const metadata = {
   metadataBase: new URL('https://www.milindkapadiya.com'),
