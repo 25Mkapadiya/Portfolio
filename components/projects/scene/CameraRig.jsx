@@ -4,9 +4,9 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
 const browsePosition = new THREE.Vector3()
-const readingPosition = new THREE.Vector3(0, 0.06, 6.82)
+const readingPosition = new THREE.Vector3(0, 0.055, 7.08)
 const browseLook = new THREE.Vector3()
-const readingLook = new THREE.Vector3(0, -0.02, 3.52)
+const readingLook = new THREE.Vector3(0, -0.02, 3.5)
 const targetPosition = new THREE.Vector3()
 const lookTarget = new THREE.Vector3()
 const currentDirection = new THREE.Vector3()
@@ -26,8 +26,8 @@ export default function CameraRig({ activeProject, reducedMotion, scrollState })
       : smoothUnit(scrollState.current.readerProgress ?? 0)
 
     const scrollProgress = scrollState.current.current
-    const pointerX = reducedMotion ? 0 : state.pointer.x * 0.16 * (1 - progress)
-    const pointerY = reducedMotion ? 0 : state.pointer.y * 0.075 * (1 - progress)
+    const pointerX = reducedMotion ? 0 : state.pointer.x * 0.1 * (1 - progress)
+    const pointerY = reducedMotion ? 0 : state.pointer.y * 0.045 * (1 - progress)
     const counterArc = (scrollProgress - 0.5) * 0.34
 
     browsePosition.set(
