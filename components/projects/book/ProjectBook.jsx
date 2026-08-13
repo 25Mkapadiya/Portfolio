@@ -7,11 +7,19 @@ import gsap from 'gsap'
 import * as THREE from 'three'
 import { getBookTransform } from '../../../lib/spiral'
 
-const tempPosition = new THREE.Vector3()
+const shelfPosition = new THREE.Vector3()
+const readingPosition = new THREE.Vector3()
 const tempScale = new THREE.Vector3()
-const tempQuaternion = new THREE.Quaternion()
-const targetEuler = new THREE.Euler()
+const shelfQuaternion = new THREE.Quaternion()
+const readingQuaternion = new THREE.Quaternion()
+const shelfEuler = new THREE.Euler()
+const readingEuler = new THREE.Euler()
 const yAxis = new THREE.Vector3(0, 1, 0)
+
+function smoothUnit(value) {
+  const t = THREE.MathUtils.clamp(value, 0, 1)
+  return t * t * (3 - 2 * t)
+}
 
 export default function ProjectBook({
   project,
@@ -28,6 +36,7 @@ export default function ProjectBook({
   const root = useRef()
   const coverPivot = useRef()
   const turningPage = useRef()
+  const transition = useRef({ value: active ? 1 : 0 })
   const [hovered, setHovered] = useState(false)
   const previousPage = useRef(pageIndex)
 
@@ -35,8 +44,6 @@ export default function ProjectBook({
   const transform = useMemo(() => getBookTransform(index, project.book), [index, project.book])
   const pageTone = project.pages?.[pageIndex]?.tone ?? '#eee7dc'
 
-  // One physical book is used in both shelf and reading states. Nothing is
-  // swapped when a project is clicked, which removes the visible transition cut.
   const coverDepth = 0.038
   const coverOverhang = 0.032
   const pageBlockDepth = Math.max(0.07, thickness - coverDepth * 2 - 0.025)
@@ -46,23 +53,15 @@ export default function ProjectBook({
   const coverZ = pageBlockDepth / 2 + coverDepth / 2 + 0.008
   const hingeX = -width / 2
 
-  // Keep every project visually large while preventing unusually tall books
-  // from clipping vertically. Yale fills most of the viewport; taller books
-  // automatically scale down just enough to remain usable.
-  const readingScale = THREE.MathUtils.clamp(2.72 / height, 1.43, 1.62)
+  // Keep the open spread large enough to carry real project imagery while
+  // scaling unusually tall books down just enough to avoid viewport clipping.
+  const readingScale = THREE.MathUtils.clamp(2.9 / height, 1.52, 1.72)
 
   useEffect(() => {
-    if (!coverPivot.current) return
-
-    const pivot = coverPivot.current.rotation
-    gsap.killTweensOf(pivot)
-
-    gsap.to(pivot, {
-      y: active ? -Math.PI + 0.075 : 0,
-      duration: reducedMotion ? 0.18 : active ? 0.92 : 0.58,
-      // Let the intact closed book leave the shelf and arrive in front of the
-      // camera before the cover starts opening.
-      delay: active && !reducedMotion ? 0.58 : 0,
+    gsap.killTweensOf(transition.current)
+    gsap.to(transition.current, {
+      value: active ? 1 : 0,
+      duration: reducedMotion ? 0.2 : active ? 1.22 : 0.92,
       ease: active ? 'power3.inOut' : 'power2.inOut',
     })
   }, [active, reducedMotion])
@@ -91,49 +90,70 @@ export default function ProjectBook({
   }, [active, pageIndex, pageDirection, reducedMotion])
 
   useFrame((state, delta) => {
-    if (!root.current) return
+    if (!root.current || !coverPivot.current) return
 
-    // Extraction is intentionally slower than hover movement. The book should
-    // feel like it physically leaves the shelf before it becomes a reader.
-    const damping = reducedMotion ? 18 : active ? 5.6 : 10
-    const alpha = 1 - Math.exp(-damping * delta)
+    const progress = reducedMotion ? (active ? 1 : 0) : transition.current.value
+    const travelProgress = smoothUnit(progress / 0.68)
+    const coverProgress = smoothUnit((progress - 0.48) / 0.52)
 
-    if (active) {
+    // The active/returning book owns the shared reader progress. Camera and
+    // library use the same value, so none of the systems can race each other.
+    if (active || progress > 0.001) {
+      scrollState.current.readerProgress = progress
+    } else if (scrollState.current.readerProgress < 0.002) {
+      scrollState.current.readerProgress = 0
+    }
+
+    coverPivot.current.rotation.y = THREE.MathUtils.lerp(0, -Math.PI + 0.075, coverProgress)
+
+    if (progress > 0.001 || active) {
       const parentRotation = scrollState?.current?.libraryRotation ?? 0
       const parentY = scrollState?.current?.libraryY ?? 0
 
-      // When the cover opens, the hinge becomes the center of the two-page
-      // spread. Shift the closed book gradually so that same hinge lands at the
-      // center of the viewport without any positional jump.
-      tempPosition.set(width * 0.5 * readingScale, -0.01 - parentY, 3.52)
-      tempPosition.applyAxisAngle(yAxis, -parentRotation)
-      tempScale.setScalar(readingScale)
-      targetEuler.set(-0.025, -parentRotation, 0)
+      shelfPosition.set(...transform.position)
+
+      // In reading mode the physical hinge becomes the center of the spread.
+      // This target is expressed in the library's local coordinates so the
+      // book can travel continuously from its exact shelf position.
+      readingPosition.set(width * 0.5 * readingScale, -0.015 - parentY, 3.58)
+      readingPosition.applyAxisAngle(yAxis, -parentRotation)
+
+      root.current.position.lerpVectors(shelfPosition, readingPosition, travelProgress)
+      tempScale.setScalar(THREE.MathUtils.lerp(1, readingScale, travelProgress))
+      root.current.scale.copy(tempScale)
+
+      shelfEuler.set(...transform.rotation)
+      readingEuler.set(-0.022, -parentRotation, 0)
+      shelfQuaternion.setFromEuler(shelfEuler)
+      readingQuaternion.setFromEuler(readingEuler)
+      root.current.quaternion.slerpQuaternions(shelfQuaternion, readingQuaternion, travelProgress)
     } else {
       const hoverOffset = hovered && project.interactive ? 0.3 : 0
-      tempPosition.set(
+      shelfPosition.set(
         transform.position[0] + transform.radial[0] * hoverOffset,
         transform.position[1] + (hovered ? 0.025 : 0),
         transform.position[2] + transform.radial[2] * hoverOffset,
       )
+
+      const alpha = 1 - Math.exp(-10 * delta)
+      root.current.position.lerp(shelfPosition, alpha)
       tempScale.setScalar(hovered && project.interactive ? 1.025 : 1)
-      targetEuler.set(...transform.rotation)
-      if (hovered && project.interactive && !reducedMotion) targetEuler.z = -0.018
-    }
+      root.current.scale.lerp(tempScale, alpha)
 
-    root.current.position.lerp(tempPosition, alpha)
-    root.current.scale.lerp(tempScale, alpha)
-    tempQuaternion.setFromEuler(targetEuler)
-    root.current.quaternion.slerp(tempQuaternion, alpha)
+      shelfEuler.set(...transform.rotation)
+      if (hovered && project.interactive && !reducedMotion) shelfEuler.z = -0.018
+      shelfQuaternion.setFromEuler(shelfEuler)
+      root.current.quaternion.slerp(shelfQuaternion, alpha)
 
-    if (!active && !reducedMotion) {
-      root.current.position.y += Math.sin(state.clock.elapsedTime * 0.7 + index * 0.8) * 0.0007
+      if (!reducedMotion) {
+        root.current.position.y += Math.sin(state.clock.elapsedTime * 0.7 + index * 0.8) * 0.0007
+      }
     }
   })
 
   const handleOver = (event) => {
     event.stopPropagation()
-    if (!project.interactive || active || interactionLocked) return
+    if (!project.interactive || active || interactionLocked || transition.current.value > 0.01) return
     setHovered(true)
     onHover?.(project)
     document.body.dataset.cursor = 'open'
@@ -148,7 +168,7 @@ export default function ProjectBook({
 
   const handleClick = (event) => {
     event.stopPropagation()
-    if (!project.interactive || active || interactionLocked) return
+    if (!project.interactive || active || interactionLocked || transition.current.value > 0.01) return
     setHovered(false)
     onHover?.(null)
     document.body.dataset.cursor = ''
@@ -164,7 +184,6 @@ export default function ProjectBook({
       onPointerOut={handleOut}
       onClick={handleClick}
     >
-      {/* Page block stays identical before, during and after extraction. */}
       <RoundedBox
         args={[width, height, pageBlockDepth]}
         radius={0.012}
@@ -175,7 +194,6 @@ export default function ProjectBook({
         <meshStandardMaterial color="#eee7dc" roughness={0.95} />
       </RoundedBox>
 
-      {/* Back cover stays fixed to the page block. */}
       <RoundedBox
         args={[width + coverOverhang, height + coverOverhang, coverDepth]}
         radius={0.006}
@@ -186,7 +204,6 @@ export default function ProjectBook({
         <meshStandardMaterial color={color} roughness={0.64} />
       </RoundedBox>
 
-      {/* Narrow spine. */}
       <RoundedBox
         args={[0.05, height + 0.025, pageBlockDepth + coverDepth * 1.7]}
         radius={0.005}
@@ -205,15 +222,11 @@ export default function ProjectBook({
         <meshStandardMaterial color={accent} roughness={0.8} />
       </mesh>
 
-      {/* Right-hand page surface is already underneath the closed cover. */}
       <mesh position={[0, 0, pageSurfaceZ]} receiveShadow>
         <planeGeometry args={[pageWidth, pageHeight]} />
         <meshStandardMaterial color={pageTone} roughness={0.99} side={THREE.DoubleSide} />
       </mesh>
 
-      {/* The front cover is the same object seen on the shelf. Its inside page
-          surface is attached to it and only becomes visible naturally as the
-          cover swings around the spine. */}
       <group ref={coverPivot} position={[hingeX, 0, coverZ]}>
         <RoundedBox
           args={[width + coverOverhang, height + coverOverhang, coverDepth]}
@@ -236,16 +249,13 @@ export default function ProjectBook({
         </mesh>
       </group>
 
-      {active && (
+      {(active || transition.current.value > 0.85) && (
         <>
-          {/* Subtle gutter shadow, intentionally very narrow. */}
           <mesh position={[hingeX, 0, pageSurfaceZ + 0.011]}>
             <planeGeometry args={[0.025, pageHeight * 0.92]} />
             <meshStandardMaterial color="#4e463e" transparent opacity={0.13} />
           </mesh>
 
-          {/* Only the currently turning sheet is conditional. It is visually
-              identical to the right page until the user actually changes spread. */}
           <group ref={turningPage} position={[hingeX, 0, pageSurfaceZ + 0.02]}>
             <mesh position={[pageWidth / 2, 0, 0]} castShadow>
               <planeGeometry args={[pageWidth, pageHeight, 24, 1]} />
