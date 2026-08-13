@@ -11,6 +11,7 @@ const tempPosition = new THREE.Vector3()
 const tempScale = new THREE.Vector3()
 const tempQuaternion = new THREE.Quaternion()
 const targetEuler = new THREE.Euler()
+const yAxis = new THREE.Vector3(0, 1, 0)
 
 export default function ProjectBook({
   project,
@@ -21,6 +22,7 @@ export default function ProjectBook({
   onOpen,
   onHover,
   reducedMotion,
+  scrollState,
 }) {
   const root = useRef()
   const coverPivot = useRef()
@@ -72,9 +74,16 @@ export default function ProjectBook({
     const alpha = 1 - Math.exp(-damping * delta)
 
     if (active) {
-      tempPosition.set(0, 0.08, 3.55)
+      const parentRotation = scrollState?.current?.libraryRotation ?? 0
+      const parentY = scrollState?.current?.libraryY ?? 0
+
+      // The library itself is rotated and translated by scroll. Convert the
+      // desired world-space reading position back into the book's local space so
+      // the selected book still flies to the exact center of the viewport.
+      tempPosition.set(0, 0.08 - parentY, 3.55)
+      tempPosition.applyAxisAngle(yAxis, -parentRotation)
       tempScale.setScalar(1.48)
-      targetEuler.set(0, 0, 0)
+      targetEuler.set(0, -parentRotation, 0)
     } else {
       const hoverOffset = hovered && project.interactive ? 0.22 : 0
       tempPosition.set(
