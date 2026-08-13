@@ -5,7 +5,7 @@ import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
 import { projects } from '../../../data/projects'
-import { getLibraryMotion, getShelfSegments } from '../../../lib/spiral'
+import { getLibraryMotion, getShelfSegments, SPIRAL } from '../../../lib/spiral'
 import ProjectBook from '../book/ProjectBook'
 
 export default function SpiralBookcase({
@@ -19,7 +19,7 @@ export default function SpiralBookcase({
   scrollState,
 }) {
   const group = useRef()
-  const shelves = useMemo(() => getShelfSegments(29), [])
+  const shelves = useMemo(() => getShelfSegments(projects.length), [])
   const initialMotion = useMemo(() => getLibraryMotion(0, projects.length), [])
 
   useFrame((state, delta) => {
@@ -60,15 +60,19 @@ export default function SpiralBookcase({
       {shelves.map((shelf, index) => (
         <RoundedBox
           key={shelf.id}
-          args={[1.35, 0.12, 0.72]}
-          radius={0.05}
+          args={[SPIRAL.shelfWidth, SPIRAL.shelfThickness, SPIRAL.shelfDepth]}
+          radius={0.045}
           smoothness={3}
           position={shelf.position}
           rotation={shelf.rotation}
           castShadow
           receiveShadow
         >
-          <meshStandardMaterial color={index % 3 === 0 ? '#ded5c5' : '#e9e1d4'} roughness={0.82} metalness={0.02} />
+          <meshStandardMaterial
+            color={index % 3 === 0 ? '#ded5c5' : '#e9e1d4'}
+            roughness={0.82}
+            metalness={0.02}
+          />
         </RoundedBox>
       ))}
 
