@@ -7,7 +7,6 @@ import * as THREE from 'three'
 import { getBookTransform } from '../../../lib/spiral'
 
 const targetPosition = new THREE.Vector3()
-const targetScale = new THREE.Vector3()
 const targetQuaternion = new THREE.Quaternion()
 const targetEuler = new THREE.Euler()
 
@@ -100,18 +99,12 @@ export default function ProjectBook({ project, index, active, hidden, interactio
 
   useFrame((_, delta) => {
     if (!root.current) return
-    const hoverOffset = hovered && project.interactive && !interactionLocked ? 0.18 : 0
-    targetPosition.set(
-      transform.position[0] + transform.radial[0] * hoverOffset,
-      transform.position[1],
-      transform.position[2] + transform.radial[2] * hoverOffset,
-    )
-    targetScale.setScalar(hovered && project.interactive && !interactionLocked ? 1.018 : 1)
+    targetPosition.set(...transform.position)
     targetEuler.set(...transform.rotation)
     targetQuaternion.setFromEuler(targetEuler)
     const alpha = reducedMotion ? 1 : 1 - Math.exp(-13 * delta)
     root.current.position.lerp(targetPosition, alpha)
-    root.current.scale.lerp(targetScale, alpha)
+    root.current.scale.setScalar(1)
     root.current.quaternion.slerp(targetQuaternion, alpha)
   })
 
