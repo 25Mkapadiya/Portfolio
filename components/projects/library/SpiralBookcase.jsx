@@ -51,40 +51,33 @@ export default function SpiralBookcase({
     scrollState.current.libraryY = group.current.position.y
   })
 
-  const visibleProjects = activeProject
-    ? projects.filter((project) => project.id === activeProject.id)
-    : projects
-
   return (
     <group
       ref={group}
       position={[0, initialMotion.positionY, 0]}
       rotation={[0, initialMotion.rotationY, 0]}
     >
-      {/* Once a project enters reading mode, remove the surrounding library
-          from the composition. The selected book keeps its shelf transform and
-          flies forward, but the final spread gets a clean, gallery-like stage. */}
-      {!activeProject && <ContinuousSpiralStructure bookCount={projects.length} />}
-      {!activeProject && <DecorativeBooks bookCount={projects.length} />}
+      {/* Keep the physical library in place while a book is extracted. Removing
+          it instantly was one of the visible cuts between click and reading. */}
+      <ContinuousSpiralStructure bookCount={projects.length} />
+      <DecorativeBooks bookCount={projects.length} />
 
-      {visibleProjects.map((project) => {
-        const index = projects.findIndex((item) => item.id === project.id)
-        return (
-          <ProjectBook
-            key={project.id}
-            project={project}
-            index={index}
-            active={activeProject?.id === project.id}
-            hovered={hoveredProject?.id === project.id}
-            pageIndex={activeProject?.id === project.id ? pageIndex : 0}
-            pageDirection={pageDirection}
-            onOpen={onOpen}
-            onHover={onHover}
-            reducedMotion={reducedMotion}
-            scrollState={scrollState}
-          />
-        )
-      })}
+      {projects.map((project, index) => (
+        <ProjectBook
+          key={project.id}
+          project={project}
+          index={index}
+          active={activeProject?.id === project.id}
+          interactionLocked={Boolean(activeProject)}
+          hovered={hoveredProject?.id === project.id}
+          pageIndex={activeProject?.id === project.id ? pageIndex : 0}
+          pageDirection={pageDirection}
+          onOpen={onOpen}
+          onHover={onHover}
+          reducedMotion={reducedMotion}
+          scrollState={scrollState}
+        />
+      ))}
     </group>
   )
 }
