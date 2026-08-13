@@ -5,7 +5,7 @@ import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import gsap from 'gsap'
 import * as THREE from 'three'
-import { getSpiralTransform } from '../../../lib/spiral'
+import { getBookTransform } from '../../../lib/spiral'
 
 const tempPosition = new THREE.Vector3()
 const tempScale = new THREE.Vector3()
@@ -30,8 +30,8 @@ export default function ProjectBook({
   const [hovered, setHovered] = useState(false)
   const previousPage = useRef(pageIndex)
 
-  const transform = useMemo(() => getSpiralTransform(index), [index])
   const { height, width, thickness, color, accent } = project.book
+  const transform = useMemo(() => getBookTransform(index, height), [index, height])
   const pageTone = project.pages?.[pageIndex]?.tone ?? '#eee7dc'
 
   useEffect(() => {
@@ -77,9 +77,6 @@ export default function ProjectBook({
       const parentRotation = scrollState?.current?.libraryRotation ?? 0
       const parentY = scrollState?.current?.libraryY ?? 0
 
-      // The library itself is rotated and translated by scroll. Convert the
-      // desired world-space reading position back into the book's local space so
-      // the selected book still flies to the exact center of the viewport.
       tempPosition.set(0, 0.08 - parentY, 3.55)
       tempPosition.applyAxisAngle(yAxis, -parentRotation)
       tempScale.setScalar(1.48)
