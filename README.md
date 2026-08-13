@@ -1,6 +1,6 @@
-# Personal 3D Portfolio
+# Milind Kapadiya — Personal Portfolio
 
-A personal portfolio built with React, Vite, Three.js, React Three Fiber, Drei and GSAP.
+Personal portfolio built with Next.js, React, Three.js, React Three Fiber, Drei and GSAP, deployed through Vercel at `milindkapadiya.com`.
 
 ## Run locally
 
@@ -9,30 +9,82 @@ npm install
 npm run dev
 ```
 
-Then open the local URL printed by Vite.
+Open the local URL printed by Next.js.
 
-## Build
+## Production build
 
 ```bash
 npm run build
+npm start
 ```
 
-## 3D workflow
+## Current prototype
 
-- Spline: use for quick scene exploration and web-ready experiments.
-- Blender: export finished models as `.glb` / `.gltf`.
-- Place local 3D assets in `public/models/`.
-- Load them in React Three Fiber with Drei's `useGLTF`.
+The `/projects` route is the first proof of concept for the interactive digital library:
 
-## Current status
+- Procedural spiral bookshelf
+- 12 generated placeholder books
+- 3 interactive project books
+- Hover / pull-out response
+- Camera focus
+- Physical cover-opening animation
+- 3 placeholder project spreads per interactive book
+- Page-turn animation
+- Close and return-to-shelf behavior
+- Project URLs such as `/projects/yale-housing`
+- Browser back/forward support
+- Keyboard controls: arrows to turn pages, Escape to close
+- Reduced-motion support
+- Mobile project index
+- Custom loading experience
 
-The starter homepage includes:
+## Add or edit projects
 
-- Responsive navigation
-- Interactive 3D hero built with React Three Fiber
-- Selected work section
-- About section
-- Contact section
-- Mobile layout
+Project content lives in:
 
-All current copy, project names, colors and the placeholder 3D object are intended to be replaced as the personal visual direction develops.
+```text
+data/projects.js
+```
+
+Each project defines metadata, book styling and page content. Books are generated from this data automatically.
+
+The three current interactive prototypes are:
+
+- `yale-housing`
+- `chess`
+- `deed-filings`
+
+Set `interactive: true` and provide `pages` to make another book openable.
+
+## 3D architecture
+
+```text
+components/projects/
+├── ProjectsExperience.jsx
+├── book/
+│   └── ProjectBook.jsx
+├── library/
+│   └── SpiralBookcase.jsx
+├── scene/
+│   ├── Atmosphere.jsx
+│   ├── CameraRig.jsx
+│   └── ProjectsScene.jsx
+└── ui/
+    ├── ProjectLoader.jsx
+    └── ProjectOverlay.jsx
+```
+
+Spiral placement is generated in `lib/spiral.js`.
+
+## Asset workflow
+
+- Spline: quick visual exploration and interaction tests.
+- Blender: final custom geometry and optimized models.
+- Export Blender assets as `.glb` / `.gltf`.
+- Put production models in `public/models/`.
+- Put project imagery in `public/projects/<project-slug>/`.
+- Prefer WebP / AVIF for still imagery.
+
+## Prototype note
+
+This is deliberately a proof of concept. The current books, materials, project page content, shelf proportions and homepage art direction are placeholders. The next step is visual refinement using the actual project assets and final portfolio identity.
