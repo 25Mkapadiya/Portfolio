@@ -11,7 +11,7 @@ const targetScale = new THREE.Vector3()
 const targetQuaternion = new THREE.Quaternion()
 const targetEuler = new THREE.Euler()
 
-function ChessCoverArtwork({ width, height, z }) {
+export function ChessCoverArtwork({ width, height, z }) {
   const boardSize = Math.min(width * 0.62, height * 0.39)
   const tile = boardSize / 4
   const boardY = height * 0.1
@@ -63,7 +63,7 @@ function ChessCoverArtwork({ width, height, z }) {
   )
 }
 
-function ChessSpineArtwork({ x, height, thickness }) {
+export function ChessSpineArtwork({ x, height, thickness }) {
   const segmentHeight = height * 0.075
   const segmentWidth = Math.min(0.085, thickness * 0.3)
 
