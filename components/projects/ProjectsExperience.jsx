@@ -35,6 +35,17 @@ export default function ProjectsExperience({ initialSlug }) {
     return () => window.removeEventListener('pointermove', move)
   }, [])
 
+  useEffect(() => {
+    if (!activeProject) return undefined
+
+    const previousOverflow = document.documentElement.style.overflow
+    document.documentElement.style.overflow = 'hidden'
+
+    return () => {
+      document.documentElement.style.overflow = previousOverflow
+    }
+  }, [activeProject])
+
   const openProject = useCallback((project, { updateHistory = true } = {}) => {
     if (!project?.interactive) return
     setHoveredProject(null)
