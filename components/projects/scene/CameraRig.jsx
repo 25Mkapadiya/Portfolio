@@ -15,15 +15,15 @@ export default function CameraRig({ activeProject, reducedMotion, scrollState })
     const alpha = 1 - Math.exp(-5.2 * delta)
 
     if (activeProject) {
-      targetPosition.set(0, 0.18, 8.25)
-      lookTarget.set(0, 0.08, 3.5)
+      // Pull back slightly in reading mode so both covers and both page edges
+      // have intentional breathing room around them.
+      targetPosition.set(0, 0.16, 8.78)
+      lookTarget.set(0, 0.0, 3.3)
     } else {
       const progress = scrollState.current.current
       const pointerX = reducedMotion ? 0 : state.pointer.x * 0.16
       const pointerY = reducedMotion ? 0 : state.pointer.y * 0.075
 
-      // The shelf does the large movement. The camera only drifts a little in the
-      // opposite direction so the experience has depth without feeling dizzy.
       const counterArc = (progress - 0.5) * 0.34
       targetPosition.set(
         Math.sin(counterArc) * 0.48 + pointerX,
