@@ -7,6 +7,7 @@ import { projects } from '../../../data/projects'
 import { getLibraryMotion } from '../../../lib/spiral'
 import ProjectBook from '../book/ProjectBook'
 import ContinuousSpiralStructure from './ContinuousSpiralStructure'
+import DecorativeBooks from './DecorativeBooks'
 
 export default function SpiralBookcase({
   activeProject,
@@ -58,6 +59,12 @@ export default function SpiralBookcase({
     >
       <ContinuousSpiralStructure bookCount={projects.length} />
 
+      {/* Environmental books fill the shelf so projects live inside a library,
+          rather than appearing as isolated objects. */}
+      <DecorativeBooks bookCount={projects.length} />
+
+      {/* Project books remain distinct, interactive objects that can detach from
+          the continuous shelf and move into the reading position. */}
       {projects.map((project, index) => (
         <ProjectBook
           key={project.id}
