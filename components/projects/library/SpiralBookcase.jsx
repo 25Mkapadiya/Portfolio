@@ -9,6 +9,11 @@ import ProjectBook from '../book/ProjectBook'
 import ContinuousSpiralStructure from './ContinuousSpiralStructure'
 import DecorativeBooks from './DecorativeBooks'
 
+function smoothUnit(value) {
+  const t = THREE.MathUtils.clamp(value, 0, 1)
+  return t * t * (3 - 2 * t)
+}
+
 export default function SpiralBookcase({
   activeProject,
   hoveredProject,
@@ -27,11 +32,18 @@ export default function SpiralBookcase({
 
     const readerProgress = scrollState.current.readerProgress ?? 0
 
-    // Freeze the library at the exact transform it had when a project was
-    // selected, and keep it frozen until the book has fully returned. This
-    // prevents the parent transform from moving underneath the transitioning
-    // book, which was the source of the visible wobble/jump.
     if (activeProject || readerProgress > 0.001) {
+      // Keep the spiral orientation frozen, but ease the whole environment away
+      // from the camera as the selected book extracts. This creates a clean
+      // physical lane so surrounding books never pass through the reader book.
+      const retreat = smoothUnit(readerProgress / 0.38)
+      group.current.position.z = THREE.MathUtils.damp(
+        group.current.position.z,
+        -1.18 * retreat,
+        reducedMotion ? 30 : 9,
+        delta,
+      )
+
       scrollState.current.libraryRotation = group.current.rotation.y
       scrollState.current.libraryY = group.current.position.y
       return
@@ -56,6 +68,12 @@ export default function SpiralBookcase({
       group.current.position.y,
       motion.positionY + idleY,
       5.4,
+      delta,
+    )
+    group.current.position.z = THREE.MathUtils.damp(
+      group.current.position.z,
+      0,
+      reducedMotion ? 30 : 9,
       delta,
     )
 
