@@ -16,6 +16,7 @@ export default function ProjectsScene(props) {
   const scrollState = useRef({
     current: 0,
     target: 0,
+    focusIndex: 0,
     lastInput: 0,
     bookCount: projects.length,
     libraryRotation: initialMotion.rotationY,
@@ -32,6 +33,10 @@ export default function ProjectsScene(props) {
     scrollState.current.readerProgress = 0
     setReaderProject(null)
   }, [])
+
+  const handleFocus = useCallback((index) => {
+    props.onHover?.(projects[index] ?? null)
+  }, [props.onHover])
 
   const readerIndex = readerProject ? projects.findIndex((item) => item.id === readerProject.id) : -1
   const readerActive = Boolean(props.activeProject && readerProject?.id === props.activeProject.id)
@@ -52,7 +57,12 @@ export default function ProjectsScene(props) {
       <directionalLight position={[-4.5, 8, 7]} intensity={3.1} color="#fff4e6" castShadow shadow-mapSize={[1024, 1024]} shadow-camera-near={1} shadow-camera-far={22} shadow-camera-left={-7} shadow-camera-right={7} shadow-camera-top={7} shadow-camera-bottom={-7} />
       <pointLight position={[5, 1.5, 4]} intensity={1.3} color="#f0d6c2" />
 
-      <SpiralScrollController scrollState={scrollState} activeProject={readerProject} reducedMotion={props.reducedMotion} />
+      <SpiralScrollController
+        scrollState={scrollState}
+        activeProject={readerProject}
+        reducedMotion={props.reducedMotion}
+        onFocus={handleFocus}
+      />
       <CameraRig activeProject={props.activeProject} reducedMotion={props.reducedMotion} scrollState={scrollState} />
       <SpiralBookcase {...props} activeProject={readerProject} scrollState={scrollState} />
 
