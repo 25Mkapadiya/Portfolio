@@ -1,16 +1,17 @@
-/* Native scroll track for the immersive Projects scene.
-   The browser owns inertia; the WebGL scene stays pinned while scroll progress
-   drives the spiral library. */
+/* The Projects scene is now a fixed viewport experience. Wheel, touch, and
+   keyboard gestures advance one exact book at a time instead of exposing a
+   continuous free-scroll track. */
 .projects-shell {
-  height: 420svh;
-  min-height: 420svh;
-  overflow: visible;
+  height: 100svh;
+  min-height: 100svh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: pan-x;
 }
 
 .scene-layer {
-  position: sticky;
-  inset: auto 0 auto 0;
-  top: 0;
+  position: fixed;
+  inset: 0;
   height: 100svh;
 }
 
@@ -24,14 +25,14 @@
 
 @media (max-width: 900px) {
   .projects-shell {
-    height: 360svh;
-    min-height: 360svh;
+    height: 100svh;
+    min-height: 100svh;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .projects-shell {
-    height: 260svh;
-    min-height: 260svh;
+    height: 100svh;
+    min-height: 100svh;
   }
 }
