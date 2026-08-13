@@ -31,7 +31,7 @@ export const projects = [
       paper: '#f7f1e7',
       theme: 'chess',
       height: 1.88,
-      width: 1.18,
+      width: 1.32,
       thickness: 0.34,
     },
     tech: ['Java', 'Swing', 'OOP', 'CardLayout', '8×8 board logic'],
@@ -46,6 +46,10 @@ export const projects = [
       },
     ],
     links: [
+      {
+        label: 'Project page',
+        href: 'https://25mkapadiya.github.io/Chess-3-Different-Versions-Lux-et-Mat-/',
+      },
       {
         label: 'View source',
         href: 'https://github.com/25Mkapadiya/Chess-3-Different-Versions-Lux-et-Mat-',
