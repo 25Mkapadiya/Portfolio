@@ -68,6 +68,7 @@ export default function ProjectsScene(props) {
 
       {readerProject && readerIndex >= 0 && (
         <ReaderBook
+          key={readerProject.id}
           project={readerProject}
           index={readerIndex}
           active={readerActive}
