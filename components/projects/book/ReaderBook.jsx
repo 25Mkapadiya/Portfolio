@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import gsap from 'gsap'
@@ -8,14 +8,11 @@ import * as THREE from 'three'
 import { getBookTransform } from '../../../lib/spiral'
 
 const yAxis = new THREE.Vector3(0, 1, 0)
-const startPosition = new THREE.Vector3()
 const endPosition = new THREE.Vector3()
 const currentPosition = new THREE.Vector3()
-const startQuaternion = new THREE.Quaternion()
 const endQuaternion = new THREE.Quaternion()
 const currentQuaternion = new THREE.Quaternion()
 const endEuler = new THREE.Euler()
-const libraryQuaternion = new THREE.Quaternion()
 
 function smoothUnit(value) {
   const t = THREE.MathUtils.clamp(value, 0, 1)
@@ -28,7 +25,6 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
   const turningPage = useRef()
   const progressRef = useRef(0)
   const previousPage = useRef(pageIndex)
-  const captured = useRef(null)
   const returnedNotified = useRef(false)
 
   const { height, width, thickness, color, accent, paper, theme } = project.book
@@ -41,26 +37,35 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
   const pageWidth = width * 0.955
   const pageHeight = height * 0.955
   const hingeX = -width / 2
-  const readingScale = theme === 'chess' ? 1.68 : THREE.MathUtils.clamp(2.8 / height, 1.48, 1.64)
+  const readingScale = theme === 'chess' ? 1.4 : THREE.MathUtils.clamp(2.55 / height, 1.34, 1.5)
 
-  useEffect(() => {
+  // Capture the selected shelf book during render, before the foreground copy can
+  // ever paint at the scene origin. ReaderBook is keyed by project in the scene,
+  // so this value is created once for each selection.
+  const captured = useRef(null)
+  if (!captured.current) {
     const libraryRotation = scrollState.current.libraryRotation ?? 0
     const libraryY = scrollState.current.libraryY ?? 0
-    const local = new THREE.Vector3(...transform.position)
-    local.applyAxisAngle(yAxis, libraryRotation)
-    local.y += libraryY
+    const position = new THREE.Vector3(...transform.position)
+    position.applyAxisAngle(yAxis, libraryRotation)
+    position.y += libraryY
 
-    const localEuler = new THREE.Euler(...transform.rotation)
-    const localQuaternion = new THREE.Quaternion().setFromEuler(localEuler)
-    libraryQuaternion.setFromEuler(new THREE.Euler(0, libraryRotation, 0))
+    const quaternion = new THREE.Quaternion().setFromEuler(
+      new THREE.Euler(
+        transform.rotation[0],
+        transform.rotation[1] + libraryRotation,
+        transform.rotation[2],
+      ),
+    )
 
-    captured.current = {
-      position: local.clone(),
-      quaternion: libraryQuaternion.clone().multiply(localQuaternion),
-    }
+    captured.current = { position, quaternion }
+  }
 
+  useLayoutEffect(() => {
     progressRef.current = 0
     returnedNotified.current = false
+    previousPage.current = pageIndex
+    scrollState.current.readerProgress = 0
 
     if (root.current) {
       root.current.position.copy(captured.current.position)
@@ -68,8 +73,7 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
       root.current.scale.setScalar(1)
     }
     if (leftLeaf.current) leftLeaf.current.rotation.y = 0
-    scrollState.current.readerProgress = 0
-  }, [project.id, scrollState, transform.position, transform.rotation])
+  }, [pageIndex, project.id, scrollState])
 
   useEffect(() => {
     if (active) returnedNotified.current = false
@@ -80,6 +84,7 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
       previousPage.current = pageIndex
       return
     }
+
     const direction = pageDirection || (pageIndex > previousPage.current ? 1 : -1)
     const page = turningPage.current.rotation
     gsap.killTweensOf(page)
@@ -98,31 +103,32 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
   useFrame((_, delta) => {
     if (!root.current || !leftLeaf.current || !captured.current) return
 
-    const target = active ? 1 : 0
-    const progress = reducedMotion
-      ? target
-      : THREE.MathUtils.damp(progressRef.current, target, active ? 4.2 : 5.2, delta)
+    const duration = active ? 1.08 : 0.82
+    const direction = active ? 1 : -1
+    const nextProgress = reducedMotion
+      ? (active ? 1 : 0)
+      : THREE.MathUtils.clamp(progressRef.current + direction * (delta / duration), 0, 1)
 
-    progressRef.current = Math.abs(progress - target) < 0.0006 ? target : progress
-    const p = progressRef.current
+    progressRef.current = nextProgress
+    const p = nextProgress
 
-    // First settle the selected book into the reading position. Only then open it.
-    const travel = smoothUnit(p / 0.76)
-    const open = smoothUnit((p - 0.7) / 0.3)
+    // The selected book fully extracts and settles before the cover begins to
+    // move. On close, this reverses naturally: close first, then return.
+    const travel = smoothUnit(p / 0.64)
+    const open = smoothUnit((p - 0.66) / 0.34)
     scrollState.current.readerProgress = p
 
-    startPosition.copy(captured.current.position)
-    endPosition.set(width * 0.5 * readingScale, -0.015, 3.48)
-    currentPosition.lerpVectors(startPosition, endPosition, travel)
+    endPosition.set(width * 0.5 * readingScale, -0.015, 3.46)
+    currentPosition.lerpVectors(captured.current.position, endPosition, travel)
     root.current.position.copy(currentPosition)
 
-    endEuler.set(-0.018, 0, 0)
+    endEuler.set(-0.025, 0, 0)
     endQuaternion.setFromEuler(endEuler)
     currentQuaternion.slerpQuaternions(captured.current.quaternion, endQuaternion, travel)
     root.current.quaternion.copy(currentQuaternion)
     root.current.scale.setScalar(THREE.MathUtils.lerp(1, readingScale, travel))
 
-    const openAngle = theme === 'chess' ? -Math.PI + 0.14 : -Math.PI + 0.16
+    const openAngle = theme === 'chess' ? -Math.PI + 0.18 : -Math.PI + 0.2
     leftLeaf.current.rotation.y = THREE.MathUtils.lerp(0, openAngle, open)
 
     if (!active && p === 0 && !returnedNotified.current) {
@@ -136,7 +142,11 @@ export default function ReaderBook({ project, index, active, pageIndex, pageDire
   const gutterColor = theme === 'chess' ? accent : color
 
   return (
-    <group ref={root}>
+    <group
+      ref={root}
+      position={captured.current.position}
+      quaternion={captured.current.quaternion}
+    >
       <RoundedBox args={[width + coverOverhang, height + coverOverhang, coverDepth]} radius={0.006} smoothness={2} position={[0, 0, -pageBlockDepth / 2 - coverDepth * 0.55]} castShadow>
         <meshStandardMaterial color={color} roughness={0.64} />
       </RoundedBox>
