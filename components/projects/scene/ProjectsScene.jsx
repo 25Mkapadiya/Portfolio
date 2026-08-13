@@ -1,16 +1,30 @@
 'use client'
 
+import { useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { ContactShadows } from '@react-three/drei'
+import { projects } from '../../../data/projects'
+import { getLibraryMotion } from '../../../lib/spiral'
 import CameraRig from './CameraRig'
+import SpiralScrollController from './SpiralScrollController'
 import Atmosphere from './Atmosphere'
 import SpiralBookcase from '../library/SpiralBookcase'
 
 export default function ProjectsScene(props) {
+  const initialMotion = getLibraryMotion(0, projects.length)
+  const scrollState = useRef({
+    current: 0,
+    target: 0,
+    lastInput: 0,
+    bookCount: projects.length,
+    libraryRotation: initialMotion.rotationY,
+    libraryY: initialMotion.positionY,
+  })
+
   return (
     <Canvas
       className="projects-canvas"
-      camera={{ position: [0, 0.45, 8.45], fov: 40, near: 0.1, far: 80 }}
+      camera={{ position: [0, 0.32, 8.65], fov: 40, near: 0.1, far: 80 }}
       dpr={[1, 1.55]}
       shadows
       gl={{ antialias: true, powerPreference: 'high-performance' }}
@@ -36,8 +50,17 @@ export default function ProjectsScene(props) {
       />
       <pointLight position={[5, 1.5, 4]} intensity={1.3} color="#f0d6c2" />
 
-      <CameraRig activeProject={props.activeProject} reducedMotion={props.reducedMotion} />
-      <SpiralBookcase {...props} />
+      <SpiralScrollController
+        scrollState={scrollState}
+        activeProject={props.activeProject}
+        reducedMotion={props.reducedMotion}
+      />
+      <CameraRig
+        activeProject={props.activeProject}
+        reducedMotion={props.reducedMotion}
+        scrollState={scrollState}
+      />
+      <SpiralBookcase {...props} scrollState={scrollState} />
       <Atmosphere reducedMotion={props.reducedMotion} />
 
       <ContactShadows
