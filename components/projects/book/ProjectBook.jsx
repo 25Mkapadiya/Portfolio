@@ -25,7 +25,7 @@ export default function ProjectBook({
   scrollState,
 }) {
   const root = useRef()
-  const coverPivot = useRef()
+  const leftLeafPivot = useRef()
   const turningPage = useRef()
   const [hovered, setHovered] = useState(false)
   const previousPage = useRef(pageIndex)
@@ -33,21 +33,31 @@ export default function ProjectBook({
   const { height, width, thickness, color, accent } = project.book
   const transform = useMemo(() => getBookTransform(index, project.book), [index, project.book])
   const pageTone = project.pages?.[pageIndex]?.tone ?? '#eee7dc'
-  const coverDepth = 0.042
+
+  const coverDepth = 0.04
   const coverOverhang = 0.034
-  const readingScale = 1.18
-  const pageZ = thickness / 2 + 0.05
+  const readingScale = 1.4
+
+  const pageWidth = width * 0.94
+  const pageHeight = height * 0.95
+  const gutter = 0.042
+  const stackDepth = Math.max(0.052, thickness * 0.2)
+  const pageCenterX = gutter / 2 + pageWidth / 2
+  const surfaceZ = stackDepth / 2 + 0.009
 
   useEffect(() => {
-    if (!coverPivot.current) return
-    gsap.killTweensOf(coverPivot.current.rotation)
-    gsap.to(coverPivot.current.rotation, {
-      // Open nearly flat around the true spine instead of stopping at a steep
-      // angle that leaves the cover hanging in front of the spread.
-      y: active ? -Math.PI + 0.06 : 0,
-      duration: reducedMotion ? 0.18 : active ? 0.95 : 0.68,
-      delay: active && !reducedMotion ? 0.38 : 0,
-      ease: active ? 'power3.inOut' : 'power2.inOut',
+    if (!active || !leftLeafPivot.current) return
+
+    const pivot = leftLeafPivot.current.rotation
+    gsap.killTweensOf(pivot)
+    pivot.y = 0
+    gsap.to(pivot, {
+      // The complete left leaf rotates around one narrow center hinge. The
+      // cover and left page block therefore always keep believable proportions.
+      y: -Math.PI + 0.035,
+      duration: reducedMotion ? 0.18 : 0.92,
+      delay: reducedMotion ? 0 : 0.24,
+      ease: 'power3.inOut',
     })
   }, [active, reducedMotion])
 
@@ -64,7 +74,7 @@ export default function ProjectBook({
 
     gsap.to(page, {
       y: direction > 0 ? -Math.PI : 0,
-      duration: reducedMotion ? 0.16 : 0.7,
+      duration: reducedMotion ? 0.16 : 0.68,
       ease: 'power2.inOut',
       onComplete: () => {
         if (turningPage.current) turningPage.current.rotation.y = 0
@@ -76,20 +86,19 @@ export default function ProjectBook({
 
   useFrame((state, delta) => {
     if (!root.current) return
-    const damping = reducedMotion ? 18 : active ? 7 : 10
+    const damping = reducedMotion ? 18 : active ? 7.5 : 10
     const alpha = 1 - Math.exp(-damping * delta)
 
     if (active) {
       const parentRotation = scrollState?.current?.libraryRotation ?? 0
       const parentY = scrollState?.current?.libraryY ?? 0
 
-      // In the open state the spread extends one page-width to the left of the
-      // closed book. Shift the root right by half a page so the complete spread
-      // is visually centered in the viewport.
-      tempPosition.set(width * 0.5 * readingScale, 0.0 - parentY, 3.32)
+      // The open book is centered on its gutter. It is deliberately closer and
+      // larger than before, but still leaves enough margin for the tallest book.
+      tempPosition.set(0, -0.02 - parentY, 3.34)
       tempPosition.applyAxisAngle(yAxis, -parentRotation)
       tempScale.setScalar(readingScale)
-      targetEuler.set(0, -parentRotation, 0)
+      targetEuler.set(-0.035, -parentRotation, 0)
     } else {
       const hoverOffset = hovered && project.interactive ? 0.3 : 0
       tempPosition.set(
@@ -145,98 +154,141 @@ export default function ProjectBook({
       onPointerOut={handleOut}
       onClick={handleClick}
     >
-      {/* Closed book / right-hand page block. */}
-      <RoundedBox
-        args={[width, height, Math.max(0.07, thickness - 0.055)]}
-        radius={0.014}
-        smoothness={2}
-        castShadow
-        receiveShadow
-      >
-        <meshStandardMaterial color={pageTone} roughness={0.93} />
-      </RoundedBox>
-
-      <RoundedBox
-        args={[width + coverOverhang, height + coverOverhang, coverDepth]}
-        radius={0.007}
-        smoothness={2}
-        position={[0, 0, -thickness / 2 - 0.024]}
-        castShadow
-      >
-        <meshStandardMaterial color={color} roughness={0.64} />
-      </RoundedBox>
-
-      <RoundedBox
-        args={[0.052, height + 0.025, thickness + 0.05]}
-        radius={0.006}
-        smoothness={2}
-        position={[-width / 2 - 0.017, 0, 0]}
-        castShadow
-      >
-        <meshStandardMaterial color={color} roughness={0.69} />
-      </RoundedBox>
-
-      <mesh
-        position={[-width / 2 - 0.044, height * 0.2, 0]}
-        rotation={[0, -Math.PI / 2, 0]}
-      >
-        <planeGeometry args={[Math.max(0.08, thickness * 0.58), Math.max(0.16, height * 0.19)]} />
-        <meshStandardMaterial color={accent} roughness={0.8} />
-      </mesh>
-
-      {/* True hinge at the physical spine: x = -width / 2. */}
-      <group ref={coverPivot} position={[-width / 2, 0, thickness / 2 + 0.024]}>
-        <RoundedBox
-          args={[width + coverOverhang, height + coverOverhang, coverDepth]}
-          radius={0.007}
-          smoothness={2}
-          position={[width / 2, 0, 0]}
-          castShadow
-        >
-          <meshStandardMaterial color={color} roughness={0.62} />
-        </RoundedBox>
-        <mesh position={[width * 0.5, 0, coverDepth * 0.52]}>
-          <planeGeometry args={[width * 0.58, height * 0.28]} />
-          <meshStandardMaterial color={accent} roughness={0.82} />
-        </mesh>
-      </group>
-
-      {active && (
-        <group>
-          {/* Left page stack is one full page-width left of the closed block,
-              so its right edge meets the physical spine. */}
+      {!active ? (
+        <>
           <RoundedBox
-            args={[width * 0.985, height * 0.985, Math.max(0.055, thickness * 0.34)]}
-            radius={0.012}
+            args={[width, height, Math.max(0.07, thickness - 0.055)]}
+            radius={0.014}
             smoothness={2}
-            position={[-width, 0, 0.01]}
             castShadow
             receiveShadow
           >
-            <meshStandardMaterial color="#eee7dc" roughness={0.95} />
+            <meshStandardMaterial color={pageTone} roughness={0.93} />
           </RoundedBox>
 
-          <mesh position={[-width, 0, pageZ + 0.006]} receiveShadow>
-            <planeGeometry args={[width * 0.92, height * 0.93]} />
-            <meshStandardMaterial color={pageTone} roughness={0.98} side={THREE.DoubleSide} />
+          <RoundedBox
+            args={[width + coverOverhang, height + coverOverhang, coverDepth]}
+            radius={0.007}
+            smoothness={2}
+            position={[0, 0, -thickness / 2 - 0.024]}
+            castShadow
+          >
+            <meshStandardMaterial color={color} roughness={0.64} />
+          </RoundedBox>
+
+          <RoundedBox
+            args={[width + coverOverhang, height + coverOverhang, coverDepth]}
+            radius={0.007}
+            smoothness={2}
+            position={[0, 0, thickness / 2 + 0.024]}
+            castShadow
+          >
+            <meshStandardMaterial color={color} roughness={0.62} />
+          </RoundedBox>
+
+          <RoundedBox
+            args={[0.052, height + 0.025, thickness + 0.05]}
+            radius={0.006}
+            smoothness={2}
+            position={[-width / 2 - 0.017, 0, 0]}
+            castShadow
+          >
+            <meshStandardMaterial color={color} roughness={0.69} />
+          </RoundedBox>
+
+          <mesh
+            position={[-width / 2 - 0.044, height * 0.2, 0]}
+            rotation={[0, -Math.PI / 2, 0]}
+          >
+            <planeGeometry args={[Math.max(0.08, thickness * 0.58), Math.max(0.16, height * 0.19)]} />
+            <meshStandardMaterial color={accent} roughness={0.8} />
           </mesh>
-          <mesh position={[0, 0, pageZ + 0.008]} receiveShadow>
-            <planeGeometry args={[width * 0.92, height * 0.93]} />
-            <meshStandardMaterial color={pageTone} roughness={0.98} side={THREE.DoubleSide} />
+        </>
+      ) : (
+        <group>
+          {/* RIGHT SIDE: back cover + page block are fixed. */}
+          <RoundedBox
+            args={[pageWidth + coverOverhang, pageHeight + coverOverhang, coverDepth]}
+            radius={0.007}
+            smoothness={2}
+            position={[pageCenterX, 0, -stackDepth / 2 - coverDepth * 0.72]}
+            castShadow
+          >
+            <meshStandardMaterial color={color} roughness={0.64} />
+          </RoundedBox>
+
+          <RoundedBox
+            args={[pageWidth, pageHeight, stackDepth]}
+            radius={0.011}
+            smoothness={2}
+            position={[pageCenterX, 0, 0]}
+            castShadow
+            receiveShadow
+          >
+            <meshStandardMaterial color="#eee7dc" roughness={0.96} />
+          </RoundedBox>
+
+          <mesh position={[pageCenterX, 0, surfaceZ]} receiveShadow>
+            <planeGeometry args={[pageWidth * 0.95, pageHeight * 0.95]} />
+            <meshStandardMaterial color={pageTone} roughness={0.99} side={THREE.DoubleSide} />
           </mesh>
 
-          {/* Turning page shares the same spine. */}
-          <group ref={turningPage} position={[-width / 2, 0, pageZ + 0.022]}>
-            <mesh position={[width / 2, 0, 0]} castShadow>
-              <planeGeometry args={[width * 0.92, height * 0.92, 20, 1]} />
-              <meshStandardMaterial color="#f7f1e8" roughness={0.98} side={THREE.DoubleSide} />
+          {/* LEFT SIDE: the page block and front cover are one leaf. When
+              closed they sit over the right pages; when opened they rotate as
+              one object around the center gutter. */}
+          <group ref={leftLeafPivot} position={[0, 0, 0]}>
+            <RoundedBox
+              args={[pageWidth, pageHeight, stackDepth]}
+              radius={0.011}
+              smoothness={2}
+              position={[pageCenterX, 0, 0]}
+              castShadow
+              receiveShadow
+            >
+              <meshStandardMaterial color="#eee7dc" roughness={0.96} />
+            </RoundedBox>
+
+            <RoundedBox
+              args={[pageWidth + coverOverhang, pageHeight + coverOverhang, coverDepth]}
+              radius={0.007}
+              smoothness={2}
+              position={[pageCenterX, 0, stackDepth / 2 + coverDepth * 0.72]}
+              castShadow
+            >
+              <meshStandardMaterial color={color} roughness={0.62} />
+            </RoundedBox>
+
+            {/* This is the inside surface of the left page. It begins hidden
+                while closed and faces the camera after the leaf opens. */}
+            <mesh position={[pageCenterX, 0, -surfaceZ]} receiveShadow>
+              <planeGeometry args={[pageWidth * 0.95, pageHeight * 0.95]} />
+              <meshStandardMaterial color={pageTone} roughness={0.99} side={THREE.DoubleSide} />
             </mesh>
           </group>
 
-          <mesh position={[-width / 2, 0, pageZ + 0.03]}>
-            <planeGeometry args={[0.034, height * 0.9]} />
-            <meshStandardMaterial color="#8f857a" transparent opacity={0.22} />
+          {/* Narrow cloth/gutter strip. The old hinge was visually much too
+              thick; this keeps the center proportional to an actual hardcover. */}
+          <RoundedBox
+            args={[gutter * 0.72, pageHeight * 0.965, 0.026]}
+            radius={0.005}
+            smoothness={2}
+            position={[0, 0, -0.012]}
+          >
+            <meshStandardMaterial color={color} roughness={0.82} />
+          </RoundedBox>
+
+          <mesh position={[0, 0, surfaceZ + 0.014]}>
+            <planeGeometry args={[gutter * 1.35, pageHeight * 0.91]} />
+            <meshStandardMaterial color="#4e463e" transparent opacity={0.13} />
           </mesh>
+
+          {/* Page turn originates from the inside edge of the right page. */}
+          <group ref={turningPage} position={[gutter / 2, 0, surfaceZ + 0.022]}>
+            <mesh position={[pageWidth / 2, 0, 0]} castShadow>
+              <planeGeometry args={[pageWidth * 0.96, pageHeight * 0.94, 24, 1]} />
+              <meshStandardMaterial color="#f8f2e9" roughness={0.99} side={THREE.DoubleSide} />
+            </mesh>
+          </group>
         </group>
       )}
     </group>
