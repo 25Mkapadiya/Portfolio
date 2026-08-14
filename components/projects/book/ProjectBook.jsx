@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
-import { getBookTransform } from '../../../lib/spiral'
+import { SPIRAL, getBookTransform } from '../../../lib/spiral'
 
 const targetPosition = new THREE.Vector3()
 const targetQuaternion = new THREE.Quaternion()
@@ -172,6 +172,8 @@ export default function ProjectBook({ project, index, active, hidden, interactio
   const coverZ = pageBlockDepth / 2 + coverDepth / 2 + 0.008
   const hingeX = -width / 2
   const unavailable = Boolean(hidden || active)
+  const shelfContactY = -height / 2 - SPIRAL.bookGap + 0.006
+  const coverRoughness = theme === 'chess' ? 0.7 : 0.78
 
   useFrame((_, delta) => {
     if (!root.current) return
@@ -218,20 +220,57 @@ export default function ProjectBook({ project, index, active, hidden, interactio
       onPointerOut={handleOut}
       onClick={handleClick}
     >
+      <mesh position={[0, shelfContactY, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1}>
+        <planeGeometry args={[width * 0.92, Math.max(0.16, thickness * 1.45)]} />
+        <meshBasicMaterial
+          color="#342c26"
+          transparent
+          opacity={project.interactive ? 0.095 : 0.07}
+          depthWrite={false}
+          polygonOffset
+          polygonOffsetFactor={-2}
+        />
+      </mesh>
+
       <RoundedBox args={[width, height, pageBlockDepth]} radius={0.012} smoothness={2} castShadow receiveShadow>
-        <meshStandardMaterial color={project.book.paper ?? '#eee7dc'} roughness={0.95} />
+        <meshStandardMaterial color={project.book.paper ?? '#eee8df'} roughness={0.97} />
       </RoundedBox>
 
       <RoundedBox args={[width + coverOverhang, height + coverOverhang, coverDepth]} radius={0.006} smoothness={2} position={[0, 0, -coverZ]} castShadow>
-        <meshStandardMaterial color={color} roughness={0.64} />
+        <meshPhysicalMaterial
+          color={color}
+          roughness={coverRoughness}
+          metalness={0}
+          clearcoat={0.025}
+          clearcoatRoughness={0.9}
+          sheen={0.12}
+          sheenRoughness={0.94}
+          sheenColor="#eadfce"
+        />
       </RoundedBox>
 
       <RoundedBox args={[width + coverOverhang, height + coverOverhang, coverDepth]} radius={0.006} smoothness={2} position={[0, 0, coverZ]} castShadow>
-        <meshStandardMaterial color={color} roughness={0.62} />
+        <meshPhysicalMaterial
+          color={color}
+          roughness={coverRoughness - 0.02}
+          metalness={0}
+          clearcoat={0.035}
+          clearcoatRoughness={0.88}
+          sheen={0.14}
+          sheenRoughness={0.94}
+          sheenColor="#eadfce"
+        />
       </RoundedBox>
 
       <RoundedBox args={[0.05, height + 0.025, pageBlockDepth + coverDepth * 1.7]} radius={0.005} smoothness={2} position={[hingeX - 0.017, 0, 0]} castShadow>
-        <meshStandardMaterial color={color} roughness={0.7} />
+        <meshPhysicalMaterial
+          color={color}
+          roughness={Math.min(0.86, coverRoughness + 0.05)}
+          metalness={0}
+          sheen={0.1}
+          sheenRoughness={0.96}
+          sheenColor="#eadfce"
+        />
       </RoundedBox>
 
       {theme === 'chess' ? (
