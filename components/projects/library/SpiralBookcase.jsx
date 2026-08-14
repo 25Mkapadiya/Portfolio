@@ -33,9 +33,8 @@ export default function SpiralBookcase({
     const readerProgress = scrollState.current.readerProgress ?? 0
 
     if (activeProject || readerProgress > 0.001) {
-      // Keep the spiral orientation frozen, but ease the whole environment away
-      // from the camera as the selected book extracts. This creates a clean
-      // physical lane so surrounding books never pass through the reader book.
+      // Keep the spiral orientation frozen, but ease the environment away as
+      // the selected book extracts so the reader transition stays visually clean.
       const retreat = smoothUnit(readerProgress / 0.38)
       group.current.position.z = THREE.MathUtils.damp(
         group.current.position.z,
@@ -52,22 +51,22 @@ export default function SpiralBookcase({
     const progress = scrollState.current.current
     const motion = getLibraryMotion(progress, projects.length)
     const idleRotation = !reducedMotion
-      ? Math.sin(state.clock.elapsedTime * 0.18) * 0.004
+      ? Math.sin(state.clock.elapsedTime * 0.15) * 0.0022
       : 0
     const idleY = !reducedMotion
-      ? Math.sin(state.clock.elapsedTime * 0.34) * 0.012
+      ? Math.sin(state.clock.elapsedTime * 0.28) * 0.006
       : 0
 
     group.current.rotation.y = THREE.MathUtils.damp(
       group.current.rotation.y,
       motion.rotationY + idleRotation,
-      5.4,
+      6.1,
       delta,
     )
     group.current.position.y = THREE.MathUtils.damp(
       group.current.position.y,
       motion.positionY + idleY,
-      5.4,
+      6.1,
       delta,
     )
     group.current.position.z = THREE.MathUtils.damp(
