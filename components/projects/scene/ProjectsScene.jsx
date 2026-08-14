@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { ContactShadows } from '@react-three/drei'
+import * as THREE from 'three'
 import { projects } from '../../../data/projects'
 import { getLibraryMotion } from '../../../lib/spiral'
 import CameraRig from './CameraRig'
@@ -46,43 +47,54 @@ export default function ProjectsScene(props) {
       className="projects-canvas"
       camera={{ position: [0, 0.32, 8.65], fov: 40, near: 0.1, far: 80 }}
       dpr={[1, 1.55]}
-      shadows
-      gl={{ antialias: true, powerPreference: 'high-performance' }}
+      shadows={{ type: THREE.PCFSoftShadowMap }}
+      gl={{
+        antialias: true,
+        powerPreference: 'high-performance',
+        toneMapping: THREE.ACESFilmicToneMapping,
+        toneMappingExposure: 1.03,
+      }}
       onPointerMissed={() => props.onHover?.(null)}
     >
-      <color attach="background" args={['#d8d0c4']} />
-      <fog attach="fog" args={['#d8d0c4', 10.5, 19.5]} />
+      <color attach="background" args={['#d9d2c8']} />
+      <fog attach="fog" args={['#d9d2c8', 11.2, 20.4]} />
 
-      <ambientLight intensity={0.78} />
-      <hemisphereLight color="#fff8ec" groundColor="#756b61" intensity={0.88} />
+      <ambientLight intensity={0.48} />
+      <hemisphereLight color="#fff8ee" groundColor="#80776f" intensity={0.72} />
 
       <directionalLight
-        position={[-5.4, 8.4, 6.8]}
-        intensity={3.55}
-        color="#fff0dd"
+        position={[-5.8, 8.8, 7.4]}
+        intensity={3.15}
+        color="#ffeedb"
         castShadow
-        shadow-mapSize={[1536, 1536]}
+        shadow-mapSize={[2048, 2048]}
         shadow-camera-near={1}
         shadow-camera-far={24}
-        shadow-camera-left={-7}
-        shadow-camera-right={7}
-        shadow-camera-top={7}
-        shadow-camera-bottom={-7}
-        shadow-bias={-0.00035}
+        shadow-camera-left={-6.4}
+        shadow-camera-right={6.4}
+        shadow-camera-top={6.6}
+        shadow-camera-bottom={-6.6}
+        shadow-bias={-0.00025}
+        shadow-normalBias={0.035}
       />
 
       <spotLight
-        position={[5.2, 5.8, 5.4]}
-        intensity={1.15}
-        color="#f6ddc3"
-        angle={0.52}
-        penumbra={0.82}
+        position={[5.6, 4.8, -1.8]}
+        intensity={0.72}
+        color="#e9e2d9"
+        angle={0.62}
+        penumbra={0.92}
         distance={18}
-        decay={1.45}
+        decay={1.6}
       />
 
-      <pointLight position={[-4.6, 0.8, -2.4]} intensity={0.48} color="#d8d1c8" distance={12} decay={1.5} />
-      <pointLight position={[4.2, -0.4, 3.6]} intensity={0.62} color="#efcfae" distance={10} decay={1.6} />
+      <pointLight
+        position={[3.4, 0.1, 4.6]}
+        intensity={0.34}
+        color="#efd2b4"
+        distance={10}
+        decay={1.75}
+      />
 
       <SpiralScrollController
         scrollState={scrollState}
@@ -108,10 +120,17 @@ export default function ProjectsScene(props) {
       )}
 
       <Atmosphere reducedMotion={props.reducedMotion} />
-      <ContactShadows position={[0, -2.65, 0]} opacity={0.28} scale={10.5} blur={2.45} far={4.8} resolution={512} />
+      <ContactShadows
+        position={[0, -2.65, 0]}
+        opacity={0.18}
+        scale={10.5}
+        blur={2.8}
+        far={4.6}
+        resolution={512}
+      />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.68, 0]} receiveShadow>
         <planeGeometry args={[30, 30]} />
-        <meshStandardMaterial color="#cec5b8" roughness={1} />
+        <meshStandardMaterial color="#cec7bd" roughness={1} />
       </mesh>
     </Canvas>
   )
