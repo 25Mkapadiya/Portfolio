@@ -27,21 +27,21 @@ export default function CameraRig({ activeProject, reducedMotion, scrollState })
     const progress = smoothUnit(rawProgress)
 
     const scrollProgress = scrollState.current.current
-    const pointerX = reducedMotion ? 0 : state.pointer.x * 0.1 * (1 - progress)
-    const pointerY = reducedMotion ? 0 : state.pointer.y * 0.045 * (1 - progress)
-    const counterArc = (scrollProgress - 0.5) * 0.34
+    const pointerX = reducedMotion ? 0 : state.pointer.x * 0.055 * (1 - progress)
+    const pointerY = reducedMotion ? 0 : state.pointer.y * 0.025 * (1 - progress)
+    const counterArc = (scrollProgress - 0.5) * 0.28
 
     browsePosition.set(
-      Math.sin(counterArc) * 0.48 + pointerX,
-      0.31 + Math.sin(scrollProgress * Math.PI) * 0.11 + pointerY,
-      8.62 + Math.cos(counterArc) * 0.06,
+      Math.sin(counterArc) * 0.42 + pointerX,
+      0.3 + Math.sin(scrollProgress * Math.PI) * 0.085 + pointerY,
+      8.68 + Math.cos(counterArc) * 0.045,
     )
-    browseLook.set(0, -0.08, 0.65)
+    browseLook.set(0, -0.075, 0.68)
 
     targetPosition.lerpVectors(browsePosition, readingPosition, progress)
     lookTarget.lerpVectors(browseLook, readingLook, progress)
 
-    const alpha = reducedMotion ? 1 : 1 - Math.exp(-14 * delta)
+    const alpha = reducedMotion ? 1 : 1 - Math.exp(-12 * delta)
     camera.position.lerp(targetPosition, alpha)
     camera.getWorldDirection(currentDirection)
     currentLook.copy(camera.position).add(currentDirection)
