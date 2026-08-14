@@ -50,12 +50,39 @@ export default function ProjectsScene(props) {
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       onPointerMissed={() => props.onHover?.(null)}
     >
-      <color attach="background" args={['#dcd4c8']} />
-      <fog attach="fog" args={['#dcd4c8', 10, 19]} />
-      <ambientLight intensity={1.45} />
-      <hemisphereLight color="#fff9ef" groundColor="#7d746a" intensity={1.35} />
-      <directionalLight position={[-4.5, 8, 7]} intensity={3.1} color="#fff4e6" castShadow shadow-mapSize={[1024, 1024]} shadow-camera-near={1} shadow-camera-far={22} shadow-camera-left={-7} shadow-camera-right={7} shadow-camera-top={7} shadow-camera-bottom={-7} />
-      <pointLight position={[5, 1.5, 4]} intensity={1.3} color="#f0d6c2" />
+      <color attach="background" args={['#d8d0c4']} />
+      <fog attach="fog" args={['#d8d0c4', 10.5, 19.5]} />
+
+      <ambientLight intensity={0.78} />
+      <hemisphereLight color="#fff8ec" groundColor="#756b61" intensity={0.88} />
+
+      <directionalLight
+        position={[-5.4, 8.4, 6.8]}
+        intensity={3.55}
+        color="#fff0dd"
+        castShadow
+        shadow-mapSize={[1536, 1536]}
+        shadow-camera-near={1}
+        shadow-camera-far={24}
+        shadow-camera-left={-7}
+        shadow-camera-right={7}
+        shadow-camera-top={7}
+        shadow-camera-bottom={-7}
+        shadow-bias={-0.00035}
+      />
+
+      <spotLight
+        position={[5.2, 5.8, 5.4]}
+        intensity={1.15}
+        color="#f6ddc3"
+        angle={0.52}
+        penumbra={0.82}
+        distance={18}
+        decay={1.45}
+      />
+
+      <pointLight position={[-4.6, 0.8, -2.4]} intensity={0.48} color="#d8d1c8" distance={12} decay={1.5} />
+      <pointLight position={[4.2, -0.4, 3.6]} intensity={0.62} color="#efcfae" distance={10} decay={1.6} />
 
       <SpiralScrollController
         scrollState={scrollState}
@@ -81,10 +108,10 @@ export default function ProjectsScene(props) {
       )}
 
       <Atmosphere reducedMotion={props.reducedMotion} />
-      <ContactShadows position={[0, -2.65, 0]} opacity={0.2} scale={10} blur={2.8} far={4.5} resolution={512} />
+      <ContactShadows position={[0, -2.65, 0]} opacity={0.28} scale={10.5} blur={2.45} far={4.8} resolution={512} />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.68, 0]} receiveShadow>
         <planeGeometry args={[30, 30]} />
-        <meshStandardMaterial color="#d4ccbf" roughness={1} />
+        <meshStandardMaterial color="#cec5b8" roughness={1} />
       </mesh>
     </Canvas>
   )
