@@ -1,0 +1,110 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R /F2 6 0 R /F3 7 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 7269 >>
+stream
+BT /F2 17.00 Tf 1 0 0 1 42.00 748.00 Tm (Milind Kapadiya) Tj ET
+BT /F1 7.40 Tf 1 0 0 1 42.00 730.00 Tm (milind.kapadiya@yale.edu  |  \(215\) 767-0440  |  www.linkedin.com/in/milind-kapadiya  |  github.com/25Mkapadiya) Tj ET
+BT /F2 8.70 Tf 1 0 0 1 42.00 719.00 Tm (SUMMARY) Tj ET
+0.25 w 42 716.80 m 570 716.80 l S
+BT /F1 7.65 Tf 1 0 0 1 42.00 708.60 Tm (Computer Science student at Yale University with hands-on experience building AI-powered applications in AWS and) Tj ET
+BT /F1 7.65 Tf 1 0 0 1 42.00 699.80 Tm (cloud-based data workflows. Skilled in Java, JavaScript, and Python with interests in AI, robotics, and software) Tj ET
+BT /F1 7.65 Tf 1 0 0 1 42.00 691.00 Tm (development. Active mentor and peer tutor with strong communication and collaboration experience.) Tj ET
+BT /F2 8.70 Tf 1 0 0 1 42.00 681.20 Tm (EDUCATION) Tj ET
+0.25 w 42 679.00 m 570 679.00 l S
+BT /F2 9.10 Tf 1 0 0 1 42.00 670.80 Tm (Yale University) Tj ET
+BT /F1 7.80 Tf 1 0 0 1 475.00 670.80 Tm (Aug 2025 - Present) Tj ET
+BT /F3 7.80 Tf 1 0 0 1 42.00 660.80 Tm (Bachelor of Science in Computer Science                                                  GPA 3.81/4.0) Tj ET
+BT /F1 7.20 Tf 1 0 0 1 42.00 651.80 Tm (Completed Coursework: Intro to Programming \(CPSC 1001\), Intro to Computer Science \(CPSC 2010\), Math Tools for CS \(CPSC 2020\)) Tj ET
+BT /F1 7.20 Tf 1 0 0 1 42.00 643.50 Tm (Upcoming Coursework: Intelligent Robotics \(CPSC 4720\), Data Structures \(CPSC 2230\), Intro to Ethics \(PHIL 1175\), Systems) Tj ET
+BT /F1 7.20 Tf 1 0 0 1 42.00 635.20 Tm (Programming \(CPSC 3230\)) Tj ET
+BT /F2 7.55 Tf 1 0 0 1 42.00 626.90 Tm (Study Abroad: Yale University, London, UK - Summer 2026) Tj ET
+BT /F1 7.20 Tf 1 0 0 1 42.00 618.10 Tm (Completed Coursework: Challenges to Democracy in Contemporary Europe \(S3470\)) Tj ET
+BT /F2 8.30 Tf 1 0 0 1 42.00 609.70 Tm (Southern Columbia Area High School) Tj ET
+BT /F1 7.50 Tf 1 0 0 1 512.00 609.70 Tm (Jun 2025) Tj ET
+BT /F3 7.45 Tf 1 0 0 1 42.00 600.60 Tm (High School Diploma                                                        GPA 100.71/100) Tj ET
+BT /F1 7.20 Tf 1 0 0 1 42.00 592.10 Tm (Salutatorian | 25 Dual Enrollment Credits through Bloomsburg University) Tj ET
+BT /F2 8.70 Tf 1 0 0 1 42.00 582.90 Tm (INTERNSHIPS) Tj ET
+0.25 w 42 580.70 m 570 580.70 l S
+BT /F2 8.30 Tf 1 0 0 1 42.00 572.50 Tm (Crux Commercial Partners, AI and Data Technology Intern) Tj ET
+BT /F1 7.45 Tf 1 0 0 1 467.00 572.50 Tm (July 2026 - Present) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 563.30 Tm (- Build AI-powered scrapers locally and deploy them in an AWS cloud environment using Deep Learning Amazon Machine) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 554.55 Tm (  Image \(DLAMI\) instances to support automated commercial real estate data collection workflows) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 545.80 Tm (- Gain hands-on experience with AI-assisted software development, cloud computing, and large-scale data workflows) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 537.05 Tm (  under professional supervision while contributing to internal automation) Tj ET
+BT /F2 8.70 Tf 1 0 0 1 42.00 527.30 Tm (PROJECTS) Tj ET
+0.25 w 42 525.10 m 570 525.10 l S
+BT /F2 8.20 Tf 1 0 0 1 42.00 516.90 Tm (Yale Housing Catalog, Independent Project) Tj ET
+BT /F1 7.40 Tf 1 0 0 1 470.00 516.90 Tm (Aug 2026 - Present) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 507.80 Tm (- Building a centralized catalog that organizes Yale housing information into an accessible resource for students) Tj ET
+BT /F2 8.15 Tf 1 0 0 1 42.00 499.05 Tm (Commercial Real Estate Web Scrapers, Crux Commercial Partners) Tj ET
+BT /F1 7.35 Tf 1 0 0 1 450.00 499.05 Tm (Summer 2026 - Present) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 490.05 Tm (- Developing and maintaining various scrapers for Crux to collect and organize commercial property information for) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 481.30 Tm (  internal use and support data-focused workflows) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 472.55 Tm (- Designed the workflow to turn repetitive property-record research into structured, reusable data that can feed) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 463.80 Tm (  downstream analysis and internal data processes.) Tj ET
+BT /F2 8.70 Tf 1 0 0 1 42.00 454.05 Tm (VOLUNTEER EXPERIENCE) Tj ET
+0.25 w 42 451.85 m 570 451.85 l S
+BT /F2 8.20 Tf 1 0 0 1 42.00 443.65 Tm (Code Haven, Yale University) Tj ET
+BT /F1 7.35 Tf 1 0 0 1 477.00 443.65 Tm (Feb 2026 - Present) Tj ET
+BT /F3 7.45 Tf 1 0 0 1 42.00 434.65 Tm (Mentor at John S. Martinez Middle School) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 426.25 Tm (- Mentor middle school students through introductory coding projects and basic computer science theory) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 417.50 Tm (- Collaborate with other Yale volunteers to teach lessons and promote student engagement) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 408.75 Tm (- Participate in an end of the year hackathon where students create projects using the skills taught over the past school) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 400.00 Tm (  year) Tj ET
+BT /F2 8.05 Tf 1 0 0 1 42.00 391.25 Tm (Math Tutoring Program, Southern Columbia Area High School) Tj ET
+BT /F1 7.30 Tf 1 0 0 1 455.00 391.25 Tm (Apr 2024 - May 2025) Tj ET
+BT /F3 7.40 Tf 1 0 0 1 42.00 382.35 Tm (Student Founder, Peer Tutor) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 374.05 Tm (- Assisted middle- and high-school students in state exam preparation with improving foundational math skills and) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 365.30 Tm (  measurable improvement in test scores.) Tj ET
+BT /F2 8.70 Tf 1 0 0 1 42.00 355.55 Tm (ORGANIZATION EXPERIENCE) Tj ET
+0.25 w 42 353.35 m 570 353.35 l S
+BT /F2 8.00 Tf 1 0 0 1 42.00 345.15 Tm (Yale Undergraduate Mentorship Initiative, Collaborations Committee) Tj ET
+BT /F1 7.30 Tf 1 0 0 1 453.00 345.15 Tm (Oct 2025 - May 2026) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 336.25 Tm (- Paired students with graduate mentors who could provide insight into further academia, research opportunities, and) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 327.50 Tm (  professional development) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 318.75 Tm (- Collaborated with committee members to strengthen student engagement and expand access to peer mentorship resources) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 310.00 Tm (- Assisted in organizing efforts that encouraged conversation between student-mentor pairs) Tj ET
+BT /F2 8.00 Tf 1 0 0 1 42.00 301.25 Tm (STARS I Program, Member) Tj ET
+BT /F1 7.30 Tf 1 0 0 1 459.00 301.25 Tm (Aug 2025 - May 2026) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 292.35 Tm (- Designated for students who have had less exposure in STEM fields) Tj ET
+BT /F1 7.55 Tf 1 0 0 1 52.00 283.60 Tm (- Attending workshops and events designed to provide advising on professional development, academics, networking, etc.) Tj ET
+BT /F2 8.70 Tf 1 0 0 1 42.00 273.85 Tm (ADDITIONAL INFORMATION) Tj ET
+0.25 w 42 271.65 m 570 271.65 l S
+BT /F1 7.40 Tf 1 0 0 1 42.00 263.45 Tm (Certificates: AWS Cloud Practitioner Essentials, AWS Certified Cloud Practitioner \(CLF-C02\) - In Progress) Tj ET
+BT /F1 7.40 Tf 1 0 0 1 42.00 255.05 Tm (Skills: Claude Code, Racket, Java, JavaScript, Python, C++, VS Code) Tj ET
+BT /F1 7.40 Tf 1 0 0 1 42.00 246.65 Tm (Languages: Conversational Gujarati, Basic Hindi, and Fundamental Spanish \(reading, writing, and speaking\)) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique >>
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000261 00000 n 
+0000007581 00000 n 
+0000007651 00000 n 
+0000007726 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R >>
+startxref
+7804
+%%EOF

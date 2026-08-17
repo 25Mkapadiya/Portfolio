@@ -1,6 +1,22 @@
-# Milind Kapadiya — Personal Portfolio
+# Milind Kapadiya — Portfolio
 
-Personal portfolio built with Next.js, React, Three.js, React Three Fiber, Drei and GSAP, deployed through Vercel at `milindkapadiya.com`.
+The `main` branch is the current recruiter-focused portfolio deployed through Vercel at `milindkapadiya.com`.
+
+It is a lightweight Next.js single-page portfolio built around Milind's current resume: introduction, Crux internship experience, current projects, technical skills, Yale education, leadership/community work, and direct contact links.
+
+## Important: 3D portfolio preservation
+
+The interactive bookshelf / 3D portfolio was intentionally preserved before the simplified site replaced the production homepage.
+
+Continue 3D development from:
+
+```text
+3d-portfolio-wip
+```
+
+That branch contains the bookshelf prototype and its React Three Fiber / Three.js / Drei / GSAP work as it existed before the temporary simplified portfolio was introduced.
+
+The 3D source also remains in `main` for now, but it is disconnected from the primary navigation and homepage. Next.js route splitting keeps the Three.js experience out of the homepage JavaScript bundle.
 
 ## Run locally
 
@@ -9,8 +25,6 @@ npm install
 npm run dev
 ```
 
-Open the local URL printed by Next.js.
-
 ## Production build
 
 ```bash
@@ -18,73 +32,13 @@ npm run build
 npm start
 ```
 
-## Current prototype
-
-The `/projects` route is the first proof of concept for the interactive digital library:
-
-- Procedural spiral bookshelf
-- 12 generated placeholder books
-- 3 interactive project books
-- Hover / pull-out response
-- Camera focus
-- Physical cover-opening animation
-- 3 placeholder project spreads per interactive book
-- Page-turn animation
-- Close and return-to-shelf behavior
-- Project URLs such as `/projects/yale-housing`
-- Browser back/forward support
-- Keyboard controls: arrows to turn pages, Escape to close
-- Reduced-motion support
-- Mobile project index
-- Custom loading experience
-
-## Add or edit projects
-
-Project content lives in:
+## Main portfolio files
 
 ```text
-data/projects.js
+app/page.jsx          # recruiter-facing single-page portfolio
+app/portfolio.css     # simple portfolio visual system + responsive/accessibility styles
+app/layout.jsx        # global metadata + homepage styles
+public/Milind_Kapadiya_Resume.pdf
 ```
 
-Each project defines metadata, book styling and page content. Books are generated from this data automatically.
-
-The three current interactive prototypes are:
-
-- `yale-housing`
-- `chess`
-- `deed-filings`
-
-Set `interactive: true` and provide `pages` to make another book openable.
-
-## 3D architecture
-
-```text
-components/projects/
-├── ProjectsExperience.jsx
-├── book/
-│   └── ProjectBook.jsx
-├── library/
-│   └── SpiralBookcase.jsx
-├── scene/
-│   ├── Atmosphere.jsx
-│   ├── CameraRig.jsx
-│   └── ProjectsScene.jsx
-└── ui/
-    ├── ProjectLoader.jsx
-    └── ProjectOverlay.jsx
-```
-
-Spiral placement is generated in `lib/spiral.js`.
-
-## Asset workflow
-
-- Spline: quick visual exploration and interaction tests.
-- Blender: final custom geometry and optimized models.
-- Export Blender assets as `.glb` / `.gltf`.
-- Put production models in `public/models/`.
-- Put project imagery in `public/projects/<project-slug>/`.
-- Prefer WebP / AVIF for still imagery.
-
-## Prototype note
-
-This is deliberately a proof of concept. The current books, materials, project page content, shelf proportions and homepage art direction are placeholders. The next step is visual refinement using the actual project assets and final portfolio identity.
+The existing 3D route-specific styles are loaded from `app/projects/layout.jsx` instead of the root layout so they are not needed by the production homepage.

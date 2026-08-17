@@ -1,23 +1,27 @@
 import './globals.css'
-import './projects-scroll.css'
-import './reader.css'
-import './case-study.css'
+import './portfolio.css'
 
 export const metadata = {
   metadataBase: new URL('https://www.milindkapadiya.com'),
   title: {
-    default: 'Milind Kapadiya — Portfolio',
-    template: '%s — Milind Kapadiya',
+    default: 'Milind Kapadiya | Computer Science',
+    template: '%s | Milind Kapadiya',
   },
   description:
-    'Milind Kapadiya — personal portfolio featuring development, interactive experiments, and 3D work.',
+    'Milind Kapadiya is a Yale Computer Science student building software across AI-assisted development, AWS cloud environments, data workflows, and independent projects.',
   alternates: { canonical: '/' },
   openGraph: {
-    title: 'Milind Kapadiya — Portfolio',
-    description: 'Development, interactive experiments, and 3D work.',
+    title: 'Milind Kapadiya | Computer Science',
+    description:
+      'Yale Computer Science student with experience in AI-assisted software development, AWS cloud environments, data workflows, and independent software projects.',
     url: 'https://www.milindkapadiya.com',
     siteName: 'Milind Kapadiya',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Milind Kapadiya | Computer Science',
+    description: 'Yale Computer Science student building software across AI, cloud, and data workflows.',
   },
 }
 
