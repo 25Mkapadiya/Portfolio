@@ -1,5 +1,6 @@
 import './globals.css'
 import './portfolio.css'
+import './portfolio-polish.css'
 
 export const metadata = {
   metadataBase: new URL('https://www.milindkapadiya.com'),
