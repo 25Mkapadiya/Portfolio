@@ -6,7 +6,7 @@ import { useFrame } from '@react-three/fiber'
 export default function Atmosphere({ reducedMotion }) {
   const points = useRef()
   const positions = useMemo(() => {
-    const count = 90
+    const count = 34
     const array = new Float32Array(count * 3)
     for (let i = 0; i < count; i += 1) {
       array[i * 3] = (Math.random() - 0.5) * 11
@@ -18,15 +18,22 @@ export default function Atmosphere({ reducedMotion }) {
 
   useFrame((state) => {
     if (!points.current || reducedMotion) return
-    points.current.rotation.y = state.clock.elapsedTime * 0.008
+    points.current.rotation.y = state.clock.elapsedTime * 0.0035
   })
 
   return (
-    <points ref={points}>
+    <points ref={points} raycast={() => null}>
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
-      <pointsMaterial color="#d7cec1" size={0.018} transparent opacity={0.34} sizeAttenuation />
+      <pointsMaterial
+        color="#cfc6bb"
+        size={0.013}
+        transparent
+        opacity={0.16}
+        depthWrite={false}
+        sizeAttenuation
+      />
     </points>
   )
 }
