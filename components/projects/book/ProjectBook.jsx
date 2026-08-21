@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
-import { getBookTransform } from '../../../lib/spiral'
+import { SPIRAL, getBookTransform } from '../../../lib/spiral'
 
 const targetPosition = new THREE.Vector3()
 const targetQuaternion = new THREE.Quaternion()
@@ -85,6 +85,82 @@ export function ChessSpineArtwork({ x, height, thickness }) {
   )
 }
 
+function GenericSpineArtwork({ x, height, thickness, accent, index }) {
+  const plateDepth = Math.max(0.07, thickness * 0.56)
+  const ruleDepth = Math.max(0.055, thickness * 0.43)
+  const motif = index % 3
+
+  return (
+    <group position={[x, 0, 0]}>
+      <mesh position={[-0.007, height * 0.34, 0]}>
+        <boxGeometry args={[0.014, 0.018, ruleDepth]} />
+        <meshStandardMaterial color={accent} roughness={0.68} />
+      </mesh>
+      <mesh position={[-0.007, -height * 0.34, 0]}>
+        <boxGeometry args={[0.014, 0.018, ruleDepth]} />
+        <meshStandardMaterial color={accent} roughness={0.68} />
+      </mesh>
+
+      <mesh position={[-0.009, height * 0.06, 0]}>
+        <boxGeometry args={[0.018, height * 0.34, plateDepth]} />
+        <meshStandardMaterial color={accent} roughness={0.76} />
+      </mesh>
+
+      {motif === 0 && (
+        <>
+          <mesh position={[-0.02, height * 0.13, 0]}>
+            <boxGeometry args={[0.01, height * 0.035, plateDepth * 0.66]} />
+            <meshStandardMaterial color="#f4eadb" roughness={0.82} />
+          </mesh>
+          <mesh position={[-0.02, height * 0.06, 0]}>
+            <boxGeometry args={[0.01, height * 0.035, plateDepth * 0.42]} />
+            <meshStandardMaterial color="#f4eadb" roughness={0.82} />
+          </mesh>
+          <mesh position={[-0.02, -height * 0.01, 0]}>
+            <boxGeometry args={[0.01, height * 0.035, plateDepth * 0.56]} />
+            <meshStandardMaterial color="#f4eadb" roughness={0.82} />
+          </mesh>
+        </>
+      )}
+
+      {motif === 1 && (
+        <>
+          <mesh position={[-0.02, height * 0.09, 0]}>
+            <boxGeometry args={[0.01, height * 0.12, 0.022]} />
+            <meshStandardMaterial color="#f4eadb" roughness={0.82} />
+          </mesh>
+          <mesh position={[-0.02, -height * 0.055, 0]}>
+            <boxGeometry args={[0.01, height * 0.055, plateDepth * 0.62]} />
+            <meshStandardMaterial color="#f4eadb" roughness={0.82} />
+          </mesh>
+        </>
+      )}
+
+      {motif === 2 && (
+        <>
+          <mesh position={[-0.02, height * 0.1, plateDepth * 0.22]} rotation={[Math.PI / 4, 0, 0]}>
+            <boxGeometry args={[0.01, height * 0.08, 0.025]} />
+            <meshStandardMaterial color="#f4eadb" roughness={0.82} />
+          </mesh>
+          <mesh position={[-0.02, height * 0.1, -plateDepth * 0.22]} rotation={[-Math.PI / 4, 0, 0]}>
+            <boxGeometry args={[0.01, height * 0.08, 0.025]} />
+            <meshStandardMaterial color="#f4eadb" roughness={0.82} />
+          </mesh>
+          <mesh position={[-0.02, -height * 0.05, 0]}>
+            <boxGeometry args={[0.01, height * 0.025, plateDepth * 0.58]} />
+            <meshStandardMaterial color="#f4eadb" roughness={0.82} />
+          </mesh>
+        </>
+      )}
+
+      <mesh position={[-0.012, -height * 0.23, 0]}>
+        <boxGeometry args={[0.016, height * 0.095, Math.max(0.035, thickness * 0.2)]} />
+        <meshStandardMaterial color={accent} roughness={0.72} />
+      </mesh>
+    </group>
+  )
+}
+
 export default function ProjectBook({ project, index, active, hidden, interactionLocked, onOpen, onHover, reducedMotion }) {
   const root = useRef()
   const [hovered, setHovered] = useState(false)
@@ -96,6 +172,8 @@ export default function ProjectBook({ project, index, active, hidden, interactio
   const coverZ = pageBlockDepth / 2 + coverDepth / 2 + 0.008
   const hingeX = -width / 2
   const unavailable = Boolean(hidden || active)
+  const shelfContactY = -height / 2 - SPIRAL.bookGap + 0.006
+  const coverRoughness = theme === 'chess' ? 0.7 : 0.78
 
   useFrame((_, delta) => {
     if (!root.current) return
@@ -142,20 +220,57 @@ export default function ProjectBook({ project, index, active, hidden, interactio
       onPointerOut={handleOut}
       onClick={handleClick}
     >
+      <mesh position={[0, shelfContactY, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1}>
+        <planeGeometry args={[width * 0.92, Math.max(0.16, thickness * 1.45)]} />
+        <meshBasicMaterial
+          color="#342c26"
+          transparent
+          opacity={project.interactive ? 0.095 : 0.07}
+          depthWrite={false}
+          polygonOffset
+          polygonOffsetFactor={-2}
+        />
+      </mesh>
+
       <RoundedBox args={[width, height, pageBlockDepth]} radius={0.012} smoothness={2} castShadow receiveShadow>
-        <meshStandardMaterial color={project.book.paper ?? '#eee7dc'} roughness={0.95} />
+        <meshStandardMaterial color={project.book.paper ?? '#eee8df'} roughness={0.97} />
       </RoundedBox>
 
       <RoundedBox args={[width + coverOverhang, height + coverOverhang, coverDepth]} radius={0.006} smoothness={2} position={[0, 0, -coverZ]} castShadow>
-        <meshStandardMaterial color={color} roughness={0.64} />
+        <meshPhysicalMaterial
+          color={color}
+          roughness={coverRoughness}
+          metalness={0}
+          clearcoat={0.025}
+          clearcoatRoughness={0.9}
+          sheen={0.12}
+          sheenRoughness={0.94}
+          sheenColor="#eadfce"
+        />
       </RoundedBox>
 
       <RoundedBox args={[width + coverOverhang, height + coverOverhang, coverDepth]} radius={0.006} smoothness={2} position={[0, 0, coverZ]} castShadow>
-        <meshStandardMaterial color={color} roughness={0.62} />
+        <meshPhysicalMaterial
+          color={color}
+          roughness={coverRoughness - 0.02}
+          metalness={0}
+          clearcoat={0.035}
+          clearcoatRoughness={0.88}
+          sheen={0.14}
+          sheenRoughness={0.94}
+          sheenColor="#eadfce"
+        />
       </RoundedBox>
 
       <RoundedBox args={[0.05, height + 0.025, pageBlockDepth + coverDepth * 1.7]} radius={0.005} smoothness={2} position={[hingeX - 0.017, 0, 0]} castShadow>
-        <meshStandardMaterial color={color} roughness={0.7} />
+        <meshPhysicalMaterial
+          color={color}
+          roughness={Math.min(0.86, coverRoughness + 0.05)}
+          metalness={0}
+          sheen={0.1}
+          sheenRoughness={0.96}
+          sheenColor="#eadfce"
+        />
       </RoundedBox>
 
       {theme === 'chess' ? (
@@ -164,10 +279,13 @@ export default function ProjectBook({ project, index, active, hidden, interactio
           <ChessSpineArtwork x={hingeX - 0.045} height={height} thickness={thickness} />
         </>
       ) : (
-        <mesh position={[hingeX - 0.042, height * 0.2, 0]} rotation={[0, -Math.PI / 2, 0]}>
-          <planeGeometry args={[Math.max(0.08, thickness * 0.58), Math.max(0.16, height * 0.19)]} />
-          <meshStandardMaterial color={accent} roughness={0.8} />
-        </mesh>
+        <GenericSpineArtwork
+          x={hingeX - 0.045}
+          height={height}
+          thickness={thickness}
+          accent={accent}
+          index={index}
+        />
       )}
     </group>
   )
